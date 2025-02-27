@@ -1,0 +1,7 @@
+# EASIEST WAY TO PUBLISH VECTOR FLUX TO GITHUB:
+1. Download GitHub Desktop: https://desktop.github.com/
+2. Open GitHub Desktop and add this folder as a local repository
+3. Click 'Publish repository' and name it 'VectorFluxGame'
+4. After publishing, go to repository Settings > Pages
+5. Set Source to 'Deploy from a branch', Branch to 'main', Folder to '/ (root)'
+6. Click Save - your game will be at https://jham323.github.io/VectorFluxGame/
