@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector Flux</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            border: 2px solid #FF00FF;
+            box-shadow: 0 0 20px #00FFFF;
+        }
+        
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+        }
+        
+        #startButton {
+            margin-top: 30px;
+            padding: 15px 30px;
+            font-size: 24px;
+            background: linear-gradient(45deg, #FF00FF, #01CDFE, #05FFA1);
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(1, 205, 254, 0.7);
+        }
+        
+        #startButton:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.7);
+        }
+        
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 24px;
+            color: #00FFFF;
+            text-shadow: 0 0 10px #00FFFF;
+            z-index: 50;
+            pointer-events: none; /* Allow clicks to pass through */
+            display: none; /* Hide by default */
+        }
+        
+        .hud-item {
+            background: rgba(0, 0, 51, 0.7);
+            padding: 5px 15px;
+            border-radius: 5px;
+            border: 1px solid #FF00FF;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+        }
+        
+        .game-title {
+            font-size: 72px;
+            background: linear-gradient(45deg, #FF71CE, #01CDFE, #05FFA1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(1, 205, 254, 0.5);
+            letter-spacing: 5px;
+        }
+        
+        .subtitle {
+            font-size: 24px;
+            color: #01CDFE;
+            margin-bottom: 40px;
+            letter-spacing: 3px;
+        }
+        
+        /* Add audio controls styling */
+        .audio-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
+        .audio-button {
+            background: linear-gradient(45deg, #FF00FF, #01CDFE, #05FFA1);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(1, 205, 254, 0.7);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .audio-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.7);
+        }
+        
+        /* Add pause icon styling */
+        .pause-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 51, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #FF00FF;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            color: #00FFFF;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .pause-key {
+            color: #FF00FF;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .pause-hint-icon {
+            margin-left: 5px;
+            display: flex;
+        }
+        
+        .pause-bar {
+            width: 4px;
+            height: 14px;
+            background-color: #00FFFF;
+            margin: 0 2px;
+            border-radius: 2px;
+        }
+        
+        /* Hide pause hint on title screen */
+        body:not(.game-active) .pause-hint {
+            display: none;
+        }
+        
+        /* Flash animation for the pause hint */
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        
+        .pause-hint {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Add game-active class to body when game starts */
+        .game-active #startScreen {
+            display: none;
+        }
+        
+        /* Game over text styling */
+        .game-over-text {
+            font-size: 72px;
+            background: linear-gradient(45deg, #FF0055, #FF71CE);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 40px;
+            text-shadow: 0 0 20px rgba(255, 0, 85, 0.7);
+            letter-spacing: 5px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Game over text container and letter animation */
+        .game-over-text-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .game-over-letter {
+            font-size: 72px;
+            font-weight: bold;
+            color: #FF0055;
+            text-shadow: 0 0 20px rgba(255, 0, 85, 0.7);
+            letter-spacing: 5px;
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(-50px) scale(0.5);
+            animation: letterDrop 0.6s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        @keyframes letterDrop {
+            0% {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.5);
+                text-shadow: 0 0 5px rgba(255, 0, 85, 0.3);
+            }
+            60% {
+                opacity: 1;
+                transform: translateY(10px) scale(1.2);
+                text-shadow: 0 0 20px rgba(255, 0, 85, 0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                text-shadow: 0 0 15px rgba(255, 0, 85, 0.7), 0 0 30px rgba(255, 0, 85, 0.4);
+                animation: letterPulse 2s infinite alternate 0.6s;
+            }
+        }
+        
+        @keyframes letterPulse {
+            0% {
+                text-shadow: 0 0 15px rgba(255, 0, 85, 0.7), 0 0 30px rgba(255, 0, 85, 0.4);
+                transform: scale(1);
+            }
+            100% {
+                text-shadow: 0 0 25px rgba(255, 0, 85, 0.9), 0 0 40px rgba(255, 0, 85, 0.6);
+                transform: scale(1.05);
+            }
+        }
+        
+        .final-score {
+            font-size: 36px;
+            color: #00FFFF;
+            -webkit-text-fill-color: #00FFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        /* Game over overlay */
+        .game-over-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 51, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .game-over-image-container {
+            position: relative;
+            width: 90%;
+            height: 70vh;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .game-over-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 30px #FF00FF);
+        }
+        
+        .game-over-score {
+            font-size: 48px;
+            color: #00FFFF;
+            text-shadow: 0 0 15px #00FFFF;
+            margin: 30px 0;
+            letter-spacing: 5px;
+        }
+        
+        /* Restart button */
+        .restart-button {
+            padding: 15px 40px;
+            font-size: 28px;
+            background: linear-gradient(45deg, #FF00FF, #01CDFE);
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(1, 205, 254, 0.7);
+            margin-top: 20px;
+        }
+        
+        .restart-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.8);
+        }
+        
+        /* Glitch effect for image */
+        .glitch-container {
+            position: relative;
+        }
+        
+        .glitch-image, .glitch-image-before, .glitch-image-after {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .glitch-image-before, .glitch-image-after {
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+        }
+        
+        .active-glitch .glitch-image-before {
+            opacity: 0.8;
+            animation: glitch-anim-1 2.5s infinite linear alternate;
+        }
+        
+        .active-glitch .glitch-image-after {
+            opacity: 0.8;
+            animation: glitch-anim-2 3s infinite linear alternate;
+        }
+        
+        /* Glitch animations */
+        @keyframes glitch-anim-1 {
+            0%, 100% { opacity: 0; transform: translate(0); }
+            7% { opacity: 0.75; transform: translate(-2px, 3px); }
+            10% { opacity: 0.25; transform: translate(-2px, -3px); }
+            20% { opacity: 0.75; transform: translate(3px, 1px); }
+            27% { opacity: 0; transform: translate(0); }
+            30% { opacity: 0.75; transform: translate(3px, -1px); }
+            35% { opacity: 0.25; transform: translate(-3px, 2px); }
+            50% { opacity: 0; transform: translate(0); }
+            62% { opacity: 0.7; transform: translate(2px, 3px); }
+            70% { opacity: 0.25; transform: translate(-3px, 1px); }
+            77% { opacity: 0; transform: translate(0); }
+            85% { opacity: 0.5; transform: translate(2px, -2px); }
+            90% { opacity: 0.25; transform: translate(-2px, 2px); }
+        }
+        
+        @keyframes glitch-anim-2 {
+            0%, 100% { opacity: 0; transform: translate(0); }
+            10% { opacity: 0.6; transform: translate(-2px, -3px); }
+            15% { opacity: 0.25; transform: translate(3px, 2px); }
+            20% { opacity: 0.5; transform: translate(2px, -2px); }
+            35% { opacity: 0; transform: translate(0); }
+            45% { opacity: 0.5; transform: translate(-3px, 2px); }
+            50% { opacity: 0.25; transform: translate(2px, -1px); }
+            65% { opacity: 0; transform: translate(0); }
+            75% { opacity: 0.5; transform: translate(2px, 3px); }
+            80% { opacity: 0.25; transform: translate(-2px, -1px); }
+            90% { opacity: 0; transform: translate(0); }
+        }
+        
+        /* Glitch text effect */
+        .glitch-text {
+            position: relative;
+        }
+        
+        .active-glitch.glitch-text {
+            animation: glitch-text 2s infinite linear alternate;
+        }
+        
+        @keyframes glitch-text {
+            0%, 100% { text-shadow: 0 0 15px #00FFFF; }
+            10% { text-shadow: 2px 2px 0 #FF00FF, -2px -2px 0 #00FFFF; }
+            20% { text-shadow: -2px 2px 0 #FF00FF, 2px -2px 0 #00FFFF; }
+            30% { text-shadow: 0 0 15px #00FFFF; }
+            40% { text-shadow: 1px -1px 0 #FF00FF, -1px 1px 0 #00FFFF; }
+            50% { text-shadow: -1px -1px 0 #FF00FF, 1px 1px 0 #00FFFF; }
+            60% { text-shadow: 0 0 15px #00FFFF; }
+            70% { text-shadow: 3px 3px 0 #FF00FF, -3px -3px 0 #00FFFF; }
+            80% { text-shadow: -3px 3px 0 #FF00FF, 3px -3px 0 #00FFFF; }
+            90% { text-shadow: 0 0 15px #00FFFF; }
+        }
+        
+        /* Flash overlay for dramatic effect */
+        .flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 300;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+        
+        #gameHUD {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            color: white;
+            text-shadow: 0 0 5px #FF00FF;
+            text-align: right;
+            display: none; /* Hide by default */
+        }
+        
+        .status-container {
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .status-label {
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+        
+        .status-bar-container {
+            width: 150px;
+            height: 12px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .status-bar {
+            height: 100%;
+            transition: width 0.3s, background-color 0.3s;
+        }
+        
+        .shield-bar {
+            background-color: #01CDFE; /* Cyan for shields */
+        }
+        
+        .hull-bar {
+            background-color: #FF71CE; /* Pink for hull */
+        }
+        
+        #scoreDisplay {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="hud">
+        <div class="hud-item">SCORE: <span id="scoreDisplay">0</span></div>
+        <div class="hud-item">SHIELD: <span id="healthDisplay">ACTIVE</span></div>
+    </div>
+    
+    <div id="gameHUD">
+        <div class="status-container">
+            <div class="status-label">SHIELDS</div>
+            <div class="status-bar-container">
+                <div id="shieldBar" class="status-bar shield-bar" style="width: 100%"></div>
+            </div>
+        </div>
+        <div class="status-container">
+            <div class="status-label">HULL</div>
+            <div class="status-bar-container">
+                <div id="hullBar" class="status-bar hull-bar" style="width: 100%"></div>
+            </div>
+        </div>
+        <div id="newScoreDisplay" class="hudItem">SCORE: 0</div>
+    </div>
+    
+    <canvas id="gameCanvas" width="1000" height="700"></canvas>
+    
+    <div id="startScreen">
+        <button id="startButton">START GAME</button>
+    </div>
+    
+    <div id="audioControls" class="audio-controls">
+        <button id="toggleAudio" class="audio-button">
+            <span id="audioIcon">🔊</span>
+        </button>
+    </div>
+    
+    <div id="pauseHint" class="pause-hint">
+        <span class="pause-key">ESC</span> = PAUSE
+        <div class="pause-hint-icon">
+            <div class="pause-bar"></div>
+            <div class="pause-bar"></div>
+        </div>
+    </div>
+    
+    <audio id="gameMusic" loop preload="auto">
+        <source src="audio/Cosmos.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <script src="game.js"></script>
+</body>
+</html> 

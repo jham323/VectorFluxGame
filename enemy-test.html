@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enemy Ship Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #000033;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #B967FF;
+            background-color: #000033;
+        }
+        .controls {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .control-row {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        label {
+            width: 120px;
+            display: inline-block;
+        }
+        button {
+            margin: 10px;
+            padding: 8px 16px;
+            background-color: #2D1B4E;
+            color: #01CDFE;
+            border: 1px solid #01CDFE;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Enemy Ship Test</h1>
+    
+    <canvas id="testCanvas" width="800" height="600"></canvas>
+    
+    <div class="controls">
+        <div class="control-row">
+            <label for="zPosition">Z Position:</label>
+            <input type="range" id="zPosition" min="100" max="5000" value="1500" step="100">
+            <span id="zPositionValue">1500</span>
+        </div>
+        <div class="control-row">
+            <label for="bankAngle">Bank Angle:</label>
+            <input type="range" id="bankAngle" min="-0.5" max="0.5" value="0" step="0.05">
+            <span id="bankAngleValue">0</span>
+        </div>
+        <div class="control-row">
+            <label for="scale">Scale:</label>
+            <input type="range" id="scale" min="0.5" max="2.0" value="1.4" step="0.1">
+            <span id="scaleValue">1.4</span>
+        </div>
+        <div class="control-row">
+            <label for="pitchFactor">Pitch Factor:</label>
+            <input type="range" id="pitchFactor" min="0" max="2.0" value="0.8" step="0.05">
+            <span id="pitchFactorValue">0.8</span>
+        </div>
+        <div style="text-align: center;">
+            <button id="animateButton">Toggle Animation</button>
+            <button id="resetButton">Reset Values</button>
+        </div>
+    </div>
+
+    <script>
+        // Get canvas and context
+        const canvas = document.getElementById('testCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Controls
+        const zPositionSlider = document.getElementById('zPosition');
+        const bankAngleSlider = document.getElementById('bankAngle');
+        const scaleSlider = document.getElementById('scale');
+        const pitchFactorSlider = document.getElementById('pitchFactor');
+        const animateButton = document.getElementById('animateButton');
+        const resetButton = document.getElementById('resetButton');
+
+        // Values display
+        const zPositionValue = document.getElementById('zPositionValue');
+        const bankAngleValue = document.getElementById('bankAngleValue');
+        const scaleValue = document.getElementById('scaleValue');
+        const pitchFactorValue = document.getElementById('pitchFactorValue');
+
+        // Enemy ship properties
+        let enemy = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            z: 1500,
+            width: 60,
+            height: 40,
+            bankAngle: 0,
+            scale: 1.4,
+            pitchFactor: 0.8,
+            lastX: canvas.width / 2
+        };
+
+        // Animation properties
+        let isAnimating = false;
+        let animationTime = 0;
+
+        // Update values from sliders
+        function updateValues() {
+            enemy.z = parseFloat(zPositionSlider.value);
+            enemy.bankAngle = parseFloat(bankAngleSlider.value);
+            enemy.scale = parseFloat(scaleSlider.value);
+            enemy.pitchFactor = parseFloat(pitchFactorSlider.value);
+            
+            // Update display values
+            zPositionValue.textContent = enemy.z;
+            bankAngleValue.textContent = enemy.bankAngle.toFixed(2);
+            scaleValue.textContent = enemy.scale.toFixed(1);
+            pitchFactorValue.textContent = enemy.pitchFactor.toFixed(2);
+            
+            // Redraw
+            drawScene();
+        }
+
+        // Reset to default values
+        function resetValues() {
+            zPositionSlider.value = 1500;
+            bankAngleSlider.value = 0;
+            scaleSlider.value = 1.4;
+            pitchFactorSlider.value = 0.8;
+            updateValues();
+        }
+
+        // Toggle animation
+        function toggleAnimation() {
+            isAnimating = !isAnimating;
+            animateButton.textContent = isAnimating ? "Stop Animation" : "Toggle Animation";
+            
+            if (isAnimating) {
+                animationLoop();
+            }
+        }
+
+        // Animation loop
+        function animationLoop() {
+            if (!isAnimating) return;
+            
+            animationTime += 0.02;
+            
+            // Animate z-position (moving closer/further)
+            enemy.z = 1500 + Math.sin(animationTime * 0.5) * 1000;
+            zPositionSlider.value = enemy.z;
+            
+            // Animate banking (left/right tilt)
+            enemy.bankAngle = Math.sin(animationTime) * 0.3;
+            bankAngleSlider.value = enemy.bankAngle;
+            
+            // Animate x-position (moving left/right)
+            enemy.x = canvas.width / 2 + Math.sin(animationTime * 1.2) * 150;
+            enemy.lastX = enemy.x - Math.cos(animationTime * 1.2) * 5;
+            
+            updateValues();
+            requestAnimationFrame(animationLoop);
+        }
+
+        // Draw the scene
+        function drawScene() {
+            // Clear canvas
+            ctx.fillStyle = '#000033';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid lines
+            drawGrid();
+            
+            // Draw enemy ship
+            drawEnemy();
+            
+            // Draw z-position indicator
+            drawZPositionIndicator();
+        }
+
+        // Draw reference grid
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(185, 103, 255, 0.3)';
+            ctx.lineWidth = 1;
+            
+            // Vertical lines
+            for (let x = 0; x <= canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // Horizontal lines
+            for (let y = 0; y <= canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Center crosshair
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2 - 20, canvas.height / 2);
+            ctx.lineTo(canvas.width / 2 + 20, canvas.height / 2);
+            ctx.moveTo(canvas.width / 2, canvas.height / 2 - 20);
+            ctx.lineTo(canvas.width / 2, canvas.height / 2 + 20);
+            ctx.stroke();
+        }
+
+        // Draw z-position indicator
+        function drawZPositionIndicator() {
+            const maxZ = 5000;
+            const barWidth = 20;
+            const barHeight = canvas.height - 40;
+            const x = canvas.width - 30;
+            const y = 20;
+            
+            // Draw bar background
+            ctx.fillStyle = 'rgba(45, 27, 78, 0.5)';
+            ctx.fillRect(x, y, barWidth, barHeight);
+            
+            // Draw position indicator - FIXED: now correctly shows near/far
+            const position = barHeight * (enemy.z / maxZ); // Reversed calculation
+            ctx.fillStyle = '#01CDFE';
+            ctx.fillRect(x, y + position - 2, barWidth, 4);
+            
+            // Draw labels - FIXED: swapped positions
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '12px monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText('FAR', x - 5, y + 12);
+            ctx.fillText('NEAR', x - 5, y + barHeight - 5);
+            
+            // Draw current z value
+            ctx.fillText(enemy.z.toFixed(0), x - 5, y + position + 4);
+        }
+
+        // Draw enemy ship
+        function drawEnemy() {
+            const e = enemy;
+            
+            // Calculate perspective for z-position
+            const perspective = 500 / Math.max(500 + Math.abs(e.z) * 0.7, 1);
+            
+            // Calculate enemy screen size with perspective
+            const width = e.width * perspective;
+            const height = e.height * 1.5 * perspective; // Increased height by 50%
+            
+            // Draw enemy ship
+            ctx.save();
+            ctx.translate(e.x, e.y);
+            
+            // Apply banking rotation (roll around Z axis)
+            ctx.rotate(e.bankAngle);
+            
+            // Set up neon wireframe effect
+            ctx.lineWidth = Math.max(1, 1.5 * perspective);
+            ctx.strokeStyle = '#FF00FF'; // Magenta for enemy outlines
+            ctx.shadowBlur = 10 * perspective;
+            ctx.shadowColor = '#FF00FF';
+            
+            // Scale factor for ship proportions - increased for wider appearance
+            const scale = e.scale;
+            
+            // Apply pitch transformation (45 degrees BACKWARD tilt - reversed from previous)
+            // We'll achieve this by extending the vertical distances in the front half
+            // and shortening them in the back half
+            const pitchFactor = e.pitchFactor; // 0.8 represents a 45-degree pitch, now backward
+            
+            // MAIN BODY - V-shaped fuselage with nose pitched backward
+            ctx.beginPath();
+            // Start at the nose (front point of the V) - moved DOWN to simulate backward pitch
+            ctx.moveTo(0, -height/1.6 * scale * (1 - pitchFactor));
+            // Right side of V - adjusted for backward pitch
+            ctx.lineTo(width/6 * scale, height/10 * scale * pitchFactor);
+            // Right rear
+            ctx.lineTo(width/7 * scale, height/3 * scale * (1 + pitchFactor));
+            // Center rear
+            ctx.lineTo(0, height/4 * scale * (1 + pitchFactor));
+            // Left rear
+            ctx.lineTo(-width/7 * scale, height/3 * scale * (1 + pitchFactor));
+            // Left side of V - adjusted for pitch
+            ctx.lineTo(-width/6 * scale, height/10 * scale * pitchFactor);
+            ctx.closePath();
+            ctx.stroke();
+            
+            // COCKPIT - Sleek visor-like shape near the front (nose)
+            ctx.beginPath();
+            ctx.moveTo(0, -height/2.0 * scale * (1 - pitchFactor)); // Top center (now at front)
+            ctx.lineTo(width/12 * scale, -height/2.8 * scale * (1 - pitchFactor)); // Right edge
+            ctx.lineTo(-width/12 * scale, -height/2.8 * scale * (1 - pitchFactor)); // Left edge
+            ctx.closePath();
+            ctx.stroke();
+            
+            // WINGS - Wide wings extending from sides, adjusted for backward pitch
+            
+            // Right wing
+            ctx.beginPath();
+            // Wing root (where it connects to body)
+            ctx.moveTo(width/6 * scale, 0);
+            // Wing extends much wider outward
+            ctx.lineTo(width/1.2 * scale, height/10 * scale * pitchFactor);
+            // Wing tip
+            ctx.lineTo(width/1.4 * scale, height/2 * scale * (1 + pitchFactor/2));
+            // Inner wing edge
+            ctx.lineTo(width/7 * scale, height/3 * scale * (1 + pitchFactor));
+            ctx.closePath();
+            ctx.stroke();
+            
+            // Left wing
+            ctx.beginPath();
+            // Wing root (where it connects to body)
+            ctx.moveTo(-width/6 * scale, 0);
+            // Wing extends much wider outward
+            ctx.lineTo(-width/1.2 * scale, height/10 * scale * pitchFactor);
+            // Wing tip
+            ctx.lineTo(-width/1.4 * scale, height/2 * scale * (1 + pitchFactor/2));
+            // Inner wing edge
+            ctx.lineTo(-width/7 * scale, height/3 * scale * (1 + pitchFactor));
+            ctx.closePath();
+            ctx.stroke();
+            
+            // WING FRONTAL EDGES - To emphasize wings from frontal view
+            
+            // Right wing front edge
+            ctx.beginPath();
+            ctx.moveTo(width/6 * scale, 0); // Wing root
+            ctx.lineTo(width/3 * scale, -height/5 * scale * (1 - pitchFactor)); // Front edge point
+            ctx.lineTo(width/1.2 * scale, height/10 * scale * pitchFactor); // Wing outer edge
+            ctx.stroke();
+            
+            // Left wing front edge
+            ctx.beginPath();
+            ctx.moveTo(-width/6 * scale, 0); // Wing root
+            ctx.lineTo(-width/3 * scale, -height/5 * scale * (1 - pitchFactor)); // Front edge point
+            ctx.lineTo(-width/1.2 * scale, height/10 * scale * pitchFactor); // Wing outer edge
+            ctx.stroke();
+            
+            // WING FINS - Vertical stabilizers on the wings
+            
+            // Right fin
+            ctx.beginPath();
+            ctx.moveTo(width/1.7 * scale, height/3 * scale * (1 + pitchFactor/2));
+            ctx.lineTo(width/1.5 * scale, height/8 * scale * (1 + pitchFactor/4));
+            ctx.lineTo(width/1.3 * scale, height/3 * scale * (1 + pitchFactor/2));
+            ctx.closePath();
+            ctx.stroke();
+            
+            // Left fin
+            ctx.beginPath();
+            ctx.moveTo(-width/1.7 * scale, height/3 * scale * (1 + pitchFactor/2));
+            ctx.lineTo(-width/1.5 * scale, height/8 * scale * (1 + pitchFactor/4));
+            ctx.lineTo(-width/1.3 * scale, height/3 * scale * (1 + pitchFactor/2));
+            ctx.closePath();
+            ctx.stroke();
+            
+            // ENGINE NACELLES - Now at the rear (bottom of screen)
+            
+            // Right engine
+            ctx.beginPath();
+            ctx.moveTo(width/7 * scale, height/3 * scale * (1 + pitchFactor)); // Front
+            ctx.lineTo(width/4 * scale, height/3 * scale * (1 + pitchFactor)); // Top
+            ctx.lineTo(width/4 * scale, height/2.5 * scale * (1 + pitchFactor)); // Rear
+            ctx.lineTo(width/7 * scale, height/2.5 * scale * (1 + pitchFactor)); // Bottom
+            ctx.closePath();
+            ctx.stroke();
+            
+            // Left engine
+            ctx.beginPath();
+            ctx.moveTo(-width/7 * scale, height/3 * scale * (1 + pitchFactor)); // Front
+            ctx.lineTo(-width/4 * scale, height/3 * scale * (1 + pitchFactor)); // Top
+            ctx.lineTo(-width/4 * scale, height/2.5 * scale * (1 + pitchFactor)); // Rear
+            ctx.lineTo(-width/7 * scale, height/2.5 * scale * (1 + pitchFactor)); // Bottom
+            ctx.closePath();
+            ctx.stroke();
+            
+            // FILL WITH SEMI-TRANSPARENT COLOR
+            
+            // Main body - semi-transparent magenta
+            ctx.fillStyle = 'rgba(255, 0, 255, 0.15)';
+            ctx.beginPath();
+            ctx.moveTo(0, -height/1.6 * scale * (1 - pitchFactor));
+            ctx.lineTo(width/6 * scale, height/10 * scale * pitchFactor);
+            ctx.lineTo(width/7 * scale, height/3 * scale * (1 + pitchFactor));
+            ctx.lineTo(0, height/4 * scale * (1 + pitchFactor));
+            ctx.lineTo(-width/7 * scale, height/3 * scale * (1 + pitchFactor));
+            ctx.lineTo(-width/6 * scale, height/10 * scale * pitchFactor);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Cockpit - menacing red
+            ctx.fillStyle = 'rgba(255, 0, 85, 0.3)';
+            ctx.beginPath();
+            ctx.moveTo(0, -height/2.0 * scale * (1 - pitchFactor));
+            ctx.lineTo(width/12 * scale, -height/2.8 * scale * (1 - pitchFactor));
+            ctx.lineTo(-width/12 * scale, -height/2.8 * scale * (1 - pitchFactor));
+            ctx.closePath();
+            ctx.fill();
+            
+            // Engine glow - simple version without gradients
+            ctx.fillStyle = '#FFAA00';
+            ctx.beginPath();
+            ctx.arc(width/4 * scale, height/2.5 * scale * (1 + pitchFactor), width/12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(-width/4 * scale, height/2.5 * scale * (1 + pitchFactor), width/12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+            
+            // Draw debug info
+            drawDebugInfo();
+        }
+
+        // Draw debug information
+        function drawDebugInfo() {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '14px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Z Position: ${enemy.z.toFixed(0)}`, 10, 20);
+            ctx.fillText(`Bank Angle: ${enemy.bankAngle.toFixed(2)}`, 10, 40);
+            ctx.fillText(`Scale: ${enemy.scale.toFixed(1)}`, 10, 60);
+            ctx.fillText(`Pitch Factor: ${enemy.pitchFactor.toFixed(2)}`, 10, 80);
+            
+            // Calculate perspective
+            const perspective = 500 / Math.max(500 + Math.abs(enemy.z) * 0.7, 1);
+            ctx.fillText(`Perspective: ${perspective.toFixed(3)}`, 10, 100);
+        }
+
+        // Event listeners
+        zPositionSlider.addEventListener('input', updateValues);
+        bankAngleSlider.addEventListener('input', updateValues);
+        scaleSlider.addEventListener('input', updateValues);
+        pitchFactorSlider.addEventListener('input', updateValues);
+        animateButton.addEventListener('click', toggleAnimation);
+        resetButton.addEventListener('click', resetValues);
+
+        // Initial draw
+        drawScene();
+    </script>
+</body>
+</html> 
