@@ -702,7 +702,7 @@
         
         .keyboard-layout {
             display: flex;
-            justify-content: space-between;
+            justify-content: space-around;
             width: 100%;
             margin-bottom: 25px;
         }
@@ -710,18 +710,16 @@
         .keyboard-side {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         
         .left-side {
-            width: 40%;
-            align-items: center;
-            justify-content: center;
+            width: 50%;
         }
         
         .right-side {
-            width: 60%;
-            align-items: center;
-            justify-content: center;
+            width: 50%;
         }
         
         .control-item {
@@ -746,20 +744,20 @@
         .up-cell {
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
         
         .arrow-middle-row {
             display: flex;
             justify-content: center;
+            gap: 10px;
         }
         
         .arrow-key-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 0 10px;
-            width: 80px;
+            margin: 0 5px;
         }
         
         .key {
@@ -807,12 +805,11 @@
         }
         
         .ready-message {
-            margin-top: 20px;
+            margin-top: 30px;
             color: #FFFFFF;
             font-size: 22px;
             letter-spacing: 2px;
             text-shadow: 0 0 8px #FFFFFF;
-            animation: pulse 2s infinite;
         }
         
         /* Name input styling */
@@ -896,7 +893,6 @@
         <div class="game-title">VECTOR FLUX</div>
         <button id="startButton">START GAME</button>
         <button id="titleLeaderboardButton" class="title-leaderboard-button">LEADERBOARD</button>
-        <button id="testLeaderboardButton" class="title-leaderboard-button" style="margin-top: 10px; background: linear-gradient(45deg, #FF00FF, #FF71CE);">TEST SCORE SUBMIT</button>
     </div>
     
     <div id="audioControls" class="audio-controls">
@@ -951,6 +947,59 @@
                 <button id="closeLeaderboardButton" class="leaderboard-button">CLOSE</button>
                 <button id="restartFromLeaderboardButton" class="leaderboard-button">PLAY AGAIN</button>
             </div>
+        </div>
+    </div>
+    
+    <!-- Update the tutorial overlay with this improved layout -->
+    <div id="tutorialOverlay" class="tutorial-overlay">
+        <div class="tutorial-container">
+            <div class="tutorial-title">CONTROLS</div>
+            
+            <div class="keyboard-layout">
+                <!-- Right side (now on the left) -->
+                <div class="keyboard-side right-side">
+                    <div class="control-item">
+                        <div class="arrow-key-container">
+                            <div class="key special-key">SPACE</div>
+                            <span class="action">FIRE</span>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="arrow-key-container">
+                            <div class="key special-key">ESC</div>
+                            <span class="action">PAUSE</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Left side (now on the right) -->
+                <div class="keyboard-side left-side">
+                    <div class="control-item">
+                        <div class="arrow-keys-container">
+                            <div class="arrow-grid">
+                                <div class="up-cell">
+                                    <div class="arrow-key-container">
+                                        <div class="key arrow-key">↑</div>
+                                        <span class="action">THRUST</span>
+                                    </div>
+                                </div>
+                                <div class="arrow-middle-row">
+                                    <div class="arrow-key-container">
+                                        <div class="key arrow-key">←</div>
+                                        <span class="action">ROTATE LEFT</span>
+                                    </div>
+                                    <div class="arrow-key-container">
+                                        <div class="key arrow-key">→</div>
+                                        <span class="action">ROTATE RIGHT</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ready-message">PRESS ANY KEY TO CONTINUE</div>
         </div>
     </div>
     
@@ -1295,15 +1344,6 @@
                 hideLeaderboard();
                 location.reload();
             };
-            
-            // Add test button functionality
-            const testLeaderboardButton = document.getElementById('testLeaderboardButton');
-            if (testLeaderboardButton) {
-                testLeaderboardButton.onclick = function() {
-                    console.log("Test leaderboard button clicked");
-                    showNameInput(Math.floor(Math.random() * 10000)); // Show name input with random score
-                };
-            }
         });
         
         // Add this immediately after your existing script
@@ -1428,5 +1468,78 @@
     
     <!-- Add game.js after the Supabase initialization -->
     <script src="game.js"></script>
+    
+    <!-- Add this script before the closing </body> tag, after your other scripts -->
+    <script>
+        // Tutorial functionality
+        const tutorialOverlay = document.getElementById('tutorialOverlay');
+        const startButton = document.getElementById('startButton');
+        
+        // Store the original game start function if it exists
+        const originalStartGame = window.startGame;
+        
+        // Override the startGame function to prevent it from running immediately
+        window.startGame = function() {
+            console.log("Game start intercepted by tutorial");
+            // This function is intentionally empty to prevent the game from starting
+            // The actual game will be started after the tutorial is dismissed
+        };
+        
+        // Initially hide the tutorial
+        tutorialOverlay.style.display = 'none';
+        
+        // Show tutorial when start button is clicked
+        startButton.addEventListener('click', function() {
+            console.log("Start button clicked, showing tutorial");
+            
+            // Hide start screen
+            document.getElementById('startScreen').style.display = 'none';
+            
+            // Show tutorial
+            tutorialOverlay.style.display = 'flex';
+            
+            // Set a timer to allow dismissal after 3 seconds
+            let canDismiss = false;
+            setTimeout(() => {
+                canDismiss = true;
+                document.querySelector('.ready-message').style.animation = 'pulse 2s infinite';
+            }, 3000);
+            
+            // Listen for any key press to dismiss tutorial
+            const dismissTutorial = function(event) {
+                if (!canDismiss) return; // Ignore input until timer completes
+                
+                // Hide tutorial
+                tutorialOverlay.style.display = 'none';
+                
+                // Remove event listeners
+                document.removeEventListener('keydown', dismissTutorial);
+                document.removeEventListener('click', dismissTutorial);
+                
+                // Add game-active class to body
+                document.body.classList.add('game-active');
+                
+                // Show HUD
+                document.getElementById('hud').style.display = 'flex';
+                document.getElementById('gameHUD').style.display = 'block';
+                
+                // Now actually start the game by calling the original function
+                if (originalStartGame) {
+                    console.log("Starting game after tutorial dismissed");
+                    originalStartGame();
+                } else {
+                    console.log("No original startGame function found");
+                }
+            };
+            
+            document.addEventListener('keydown', dismissTutorial);
+            document.addEventListener('click', dismissTutorial);
+        });
+        
+        // Force the tutorial to be visible if it's not showing
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM loaded, tutorial overlay display style:", tutorialOverlay.style.display);
+        });
+    </script>
 </body>
 </html> 
