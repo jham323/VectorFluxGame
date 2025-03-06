@@ -119,6 +119,7 @@ function handleKeyUp(e) {
     }
 }
 
+<<<<<<< HEAD
 // Update the showTutorialScreen function to create a more keyboard-like layout
 function showTutorialScreen() {
     console.log("Showing tutorial screen");
@@ -261,6 +262,9 @@ function showTutorialScreen() {
 }
 
 // Modify the startGame function to show tutorial first
+=======
+// Restore the player entrance animation and fix enemy spawning
+>>>>>>> 617ac89ac9790bbd2436640e0eb9138569b34c7b
 function startGame() {
     console.log("Game started!");
     
@@ -320,9 +324,15 @@ function startGame() {
     player.pitchAngle = -0.3; // Slight upward pitch
     player.scale = 1.5; // Start larger
     
+<<<<<<< HEAD
     // Add entrance animation properties but don't activate yet
     player.entranceAnimation = {
         active: false, // Changed to false - will be activated after tutorial
+=======
+    // Add entrance animation properties
+    player.entranceAnimation = {
+        active: true,
+>>>>>>> 617ac89ac9790bbd2436640e0eb9138569b34c7b
         duration: 2.0, // seconds
         timeElapsed: 0,
         targetY: canvas.height * 0.8, // Final position
@@ -373,6 +383,7 @@ function startGame() {
         requestAnimationFrame(gameLoop);
     }
     
+<<<<<<< HEAD
     // Show tutorial screen instead of starting gameplay immediately
     showTutorialScreen();
 }
@@ -387,6 +398,8 @@ function startActualGameplay() {
         player.entranceAnimation.timeElapsed = 0;
     }
     
+=======
+>>>>>>> 617ac89ac9790bbd2436640e0eb9138569b34c7b
     console.log("Setting up enemy spawn timeout for 3.5 seconds from now");
     // Spawn enemies after 3-4 seconds
     setTimeout(() => {
