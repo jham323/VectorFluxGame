@@ -119,152 +119,7 @@ function handleKeyUp(e) {
     }
 }
 
-<<<<<<< HEAD
-// Update the showTutorialScreen function to create a more keyboard-like layout
-function showTutorialScreen() {
-    console.log("Showing tutorial screen");
-    
-    // Create tutorial overlay if it doesn't exist
-    let tutorialOverlay = document.getElementById('tutorialOverlay');
-    if (!tutorialOverlay) {
-        tutorialOverlay = document.createElement('div');
-        tutorialOverlay.id = 'tutorialOverlay';
-        tutorialOverlay.className = 'tutorial-overlay';
-        document.body.appendChild(tutorialOverlay);
-        
-        // Create tutorial container with styling similar to HUD elements
-        const tutorialContainer = document.createElement('div');
-        tutorialContainer.className = 'tutorial-container';
-        
-        // Create tutorial title
-        const tutorialTitle = document.createElement('h2');
-        tutorialTitle.textContent = 'CONTROLS';
-        tutorialTitle.className = 'tutorial-title';
-        
-        // Create a container for the keyboard layout
-        const keyboardLayout = document.createElement('div');
-        keyboardLayout.className = 'keyboard-layout';
-        
-        // Create left side for special keys (SPACE, ESC)
-        const leftSide = document.createElement('div');
-        leftSide.className = 'keyboard-side left-side';
-        
-        // Create right side for arrow keys
-        const rightSide = document.createElement('div');
-        rightSide.className = 'keyboard-side right-side';
-        
-        // Create arrow keys container to arrange them in a cross pattern
-        const arrowKeysContainer = document.createElement('div');
-        arrowKeysContainer.className = 'arrow-keys-container';
-        
-        // Define the special keys (left side)
-        const specialKeys = [
-            { key: 'SPACE', action: 'FIRE WEAPONS' },
-            { key: 'ESC', action: 'PAUSE GAME' }
-        ];
-        
-        // Create each special key item
-        specialKeys.forEach(control => {
-            const controlItem = document.createElement('div');
-            controlItem.className = 'control-item';
-            
-            const keyElement = document.createElement('div');
-            keyElement.className = 'key special-key';
-            keyElement.textContent = control.key;
-            
-            const actionElement = document.createElement('div');
-            actionElement.className = 'action';
-            actionElement.textContent = control.action;
-            
-            controlItem.appendChild(keyElement);
-            controlItem.appendChild(actionElement);
-            leftSide.appendChild(controlItem);
-        });
-        
-        // Create the arrow keys in a cross pattern
-        // Up arrow
-        const upArrow = createArrowKey('↑', 'THRUST', 'up-arrow');
-        
-        // Middle row (left, down, right)
-        const middleRow = document.createElement('div');
-        middleRow.className = 'arrow-middle-row';
-        
-        const leftArrow = createArrowKey('←', 'BANK LEFT', 'left-arrow');
-        const downArrow = createArrowKey('↓', 'REVERSE', 'down-arrow');
-        const rightArrow = createArrowKey('→', 'BANK RIGHT', 'right-arrow');
-        
-        middleRow.appendChild(leftArrow);
-        middleRow.appendChild(downArrow);
-        middleRow.appendChild(rightArrow);
-        
-        // Add arrows to container
-        arrowKeysContainer.appendChild(upArrow);
-        arrowKeysContainer.appendChild(middleRow);
-        
-        // Add arrow keys container to right side
-        rightSide.appendChild(arrowKeysContainer);
-        
-        // Add both sides to keyboard layout
-        keyboardLayout.appendChild(leftSide);
-        keyboardLayout.appendChild(rightSide);
-        
-        // Create ready message
-        const readyMessage = document.createElement('div');
-        readyMessage.className = 'ready-message';
-        readyMessage.textContent = 'PREPARE FOR LAUNCH...';
-        
-        // Assemble the tutorial
-        tutorialContainer.appendChild(tutorialTitle);
-        tutorialContainer.appendChild(keyboardLayout);
-        tutorialContainer.appendChild(readyMessage);
-        tutorialOverlay.appendChild(tutorialContainer);
-    }
-    
-    // Show the tutorial with fade-in effect
-    tutorialOverlay.style.display = 'flex';
-    tutorialOverlay.style.opacity = '0';
-    
-    // Fade in
-    setTimeout(() => {
-        tutorialOverlay.style.opacity = '1';
-    }, 50);
-    
-    // Set timeout to hide tutorial and start game
-    setTimeout(() => {
-        // Fade out
-        tutorialOverlay.style.opacity = '0';
-        
-        // After fade out, hide and start actual gameplay
-        setTimeout(() => {
-            tutorialOverlay.style.display = 'none';
-            startActualGameplay();
-        }, 500); // Fade out duration
-    }, 5000); // Show tutorial for 5 seconds
-    
-    // Helper function to create arrow key elements
-    function createArrowKey(symbol, action, className) {
-        const keyContainer = document.createElement('div');
-        keyContainer.className = 'arrow-key-container ' + className;
-        
-        const keyElement = document.createElement('div');
-        keyElement.className = 'key arrow-key';
-        keyElement.textContent = symbol;
-        
-        const actionElement = document.createElement('div');
-        actionElement.className = 'action arrow-action';
-        actionElement.textContent = action;
-        
-        keyContainer.appendChild(keyElement);
-        keyContainer.appendChild(actionElement);
-        
-        return keyContainer;
-    }
-}
-
-// Modify the startGame function to show tutorial first
-=======
 // Restore the player entrance animation and fix enemy spawning
->>>>>>> 617ac89ac9790bbd2436640e0eb9138569b34c7b
 function startGame() {
     console.log("Game started!");
     
@@ -324,15 +179,9 @@ function startGame() {
     player.pitchAngle = -0.3; // Slight upward pitch
     player.scale = 1.5; // Start larger
     
-<<<<<<< HEAD
-    // Add entrance animation properties but don't activate yet
-    player.entranceAnimation = {
-        active: false, // Changed to false - will be activated after tutorial
-=======
     // Add entrance animation properties
     player.entranceAnimation = {
         active: true,
->>>>>>> 617ac89ac9790bbd2436640e0eb9138569b34c7b
         duration: 2.0, // seconds
         timeElapsed: 0,
         targetY: canvas.height * 0.8, // Final position
@@ -383,23 +232,6 @@ function startGame() {
         requestAnimationFrame(gameLoop);
     }
     
-<<<<<<< HEAD
-    // Show tutorial screen instead of starting gameplay immediately
-    showTutorialScreen();
-}
-
-// New function to start actual gameplay after tutorial
-function startActualGameplay() {
-    console.log("Starting actual gameplay after tutorial");
-    
-    // Activate player entrance animation
-    if (player.entranceAnimation) {
-        player.entranceAnimation.active = true;
-        player.entranceAnimation.timeElapsed = 0;
-    }
-    
-=======
->>>>>>> 617ac89ac9790bbd2436640e0eb9138569b34c7b
     console.log("Setting up enemy spawn timeout for 3.5 seconds from now");
     // Spawn enemies after 3-4 seconds
     setTimeout(() => {
