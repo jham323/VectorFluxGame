@@ -2681,6 +2681,45 @@ function drawEnemies() {
         e.lastX = e.x;
         e.lastY = e.y;
         
+        // NEW: Check if enemy is in range of player's lasers
+        // Define the effective range for player's weapons
+        const effectiveRange = 1500; // Adjust this value based on your game's mechanics
+        const inRange = e.z <= effectiveRange;
+        
+        // NEW: Add targeting indicator when in range
+        if (inRange) {
+            // Calculate pulse effect based on time
+            const pulseIntensity = 0.3 + 0.2 * Math.sin(Date.now() / 300);
+            
+            // Draw targeting indicator around the ship
+            ctx.beginPath();
+            // Use a slightly larger outline than the ship
+            const outlineScale = 1.2;
+            // FIXED: Don't use scale variable that's defined later
+            const outlineWidth = width * outlineScale;
+            const outlineHeight = height * outlineScale;
+            
+            // Draw elliptical targeting indicator
+            ctx.ellipse(0, 0, outlineWidth, outlineHeight, 0, 0, Math.PI * 2);
+            
+            // Create gradient for targeting indicator
+            const targetGradient = ctx.createRadialGradient(
+                0, 0, Math.min(outlineWidth, outlineHeight) * 0.7,
+                0, 0, Math.max(outlineWidth, outlineHeight)
+            );
+            
+            // Closer enemies have more intense targeting indicators
+            const proximityFactor = 1 - (e.z / effectiveRange);
+            const alphaValue = 0.1 + 0.2 * proximityFactor * pulseIntensity;
+            
+            targetGradient.addColorStop(0, 'rgba(0, 255, 255, 0)');
+            targetGradient.addColorStop(0.7, `rgba(0, 255, 255, ${alphaValue * 0.3})`);
+            targetGradient.addColorStop(1, `rgba(0, 255, 255, ${alphaValue})`);
+            
+            ctx.fillStyle = targetGradient;
+            ctx.fill();
+        }
+        
         // Set up neon wireframe effect
         ctx.lineWidth = Math.max(1, 1.5 * perspective);
         ctx.strokeStyle = '#FF00FF'; // Magenta for enemy outlines
@@ -3069,7 +3108,7 @@ function drawParticles() {
         const perspective = 500 / (500 + Math.abs(p.z));
         
         // Calculate size with perspective
-        const size = p.size * perspective;
+        const size = Math.max(0.1, p.size * perspective);
         
         if (p.type === 'hit') {
             // Draw hit particles (small sparks)

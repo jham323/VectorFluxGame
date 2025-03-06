@@ -18,11 +18,19 @@
             justify-content: center;
             height: 100vh;
             overflow: hidden;
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: none;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
         
         #gameCanvas {
             border: 2px solid #FF00FF;
             box-shadow: 0 0 20px #00FFFF;
+            visibility: visible !important;
+            filter: none;
         }
         
         #startScreen {
@@ -35,8 +43,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: transparent;
             z-index: 10;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
         }
         
         #startButton {
@@ -45,14 +54,17 @@
             font-size: 24px;
             background: linear-gradient(45deg, #FF00FF, #01CDFE, #05FFA1);
             border: none;
-            color: white;
+            color: #000;
             border-radius: 5px;
             cursor: pointer;
             font-family: 'Orbitron', sans-serif;
             text-transform: uppercase;
             letter-spacing: 2px;
             transition: all 0.3s;
-            box-shadow: 0 0 15px rgba(1, 205, 254, 0.7);
+            box-shadow: 0 0 25px rgba(1, 205, 254, 0.9), 0 0 45px rgba(255, 0, 255, 0.8);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+            border: 2px solid rgba(0, 0, 0, 0.5);
+            font-weight: bold;
         }
         
         #startButton:hover {
@@ -91,8 +103,19 @@
             background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(1, 205, 254, 0.5);
+            text-shadow: 0 0 20px rgba(1, 205, 254, 0.9), 0 0 30px rgba(255, 113, 206, 0.9), 0 0 40px rgba(5, 255, 161, 0.8);
             letter-spacing: 5px;
+            -webkit-text-stroke: 2px rgba(255, 255, 255, 0.6);
+            animation: title-glow 3s infinite alternate;
+        }
+        
+        @keyframes title-glow {
+            0% {
+                text-shadow: 0 0 20px rgba(1, 205, 254, 0.9), 0 0 30px rgba(255, 113, 206, 0.8);
+            }
+            100% {
+                text-shadow: 0 0 25px rgba(1, 205, 254, 1), 0 0 40px rgba(255, 113, 206, 1), 0 0 50px rgba(5, 255, 161, 0.9);
+            }
         }
         
         .subtitle {
@@ -256,12 +279,6 @@
             color: #00FFFF;
             -webkit-text-fill-color: #00FFFF;
             text-shadow: 0 0 10px #00FFFF;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
         }
         
         /* Game over overlay */
@@ -647,7 +664,7 @@
             font-size: 20px;
             background: linear-gradient(45deg, #01CDFE, #05FFA1);
             border: none;
-            color: white;
+            color: #000;
             border-radius: 5px;
             cursor: pointer;
             font-family: 'Orbitron', sans-serif;
@@ -655,6 +672,9 @@
             letter-spacing: 2px;
             transition: all 0.3s;
             box-shadow: 0 0 15px rgba(1, 205, 254, 0.7);
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+            border: 2px solid rgba(0, 0, 0, 0.5);
         }
         
         .title-leaderboard-button:hover {
@@ -669,7 +689,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            display: flex;
+            display: none; /* Keep this as none to prevent flashing */
             justify-content: center;
             align-items: center;
             background-color: rgba(0, 0, 51, 0.85);
@@ -863,6 +883,29 @@
             50% { background: rgba(255, 0, 255, 0.4); }
             100% { background: rgba(255, 0, 255, 0.2); }
         }
+        
+        /* Ensure game doesn't start animations until active */
+        body:not(.game-active) #gameCanvas {
+            opacity: 0.5;
+            filter: none;
+        }
+        
+        /* Ensure HUD elements stay hidden until game starts */
+        body:not(.game-active) #gameHUD,
+        body:not(.game-active) #hud {
+            display: none !important;
+        }
+        
+        /* If there's an overlay div, we can adjust its opacity */
+        .background-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            z-index: -1;
+        }
     </style>
 </head>
 <body>
@@ -1005,18 +1048,36 @@
     
     <!-- Add Supabase JS library -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    
+
+    <!-- Your custom scripts should come after -->
     <script>
+        // Ensure Supabase is properly loaded before using it
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if supabase is available
+            if (typeof supabase === 'undefined') {
+                console.error("Supabase library not loaded!");
+                return;
+            }
+            
+            try {
+                // Initialize the client
+                const supabaseUrl = 'https://oarddtfmzfjfnbbzgwsu.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hcmRkdGZtemZqZm5iYnpnd3N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyMDk3OTAsImV4cCI6MjA1Njc4NTc5MH0.gACJkEXr17AR1GYCzgqagmcpQpHCdvCI57RJgIyIjM4';
+                
+                // Create the global supabaseClient variable
+                window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+                
+                console.log("Supabase client initialized:", window.supabaseClient);
+                
+                // Test the connection
+                testDatabaseConnection();
+            } catch (e) {
+                console.error("Error initializing Supabase client:", e);
+            }
+        });
+        
         // Add these near the beginning of your script
         console.log("Leaderboard script loaded");
-        
-        // Supabase configuration
-        const supabaseUrl = 'https://oarddtfmzfjfnbbzgwsu.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hcmRkdGZtemZqZm5iYnpnd3N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyMDk3OTAsImV4cCI6MjA1Njc4NTc5MH0.gACJkEXr17AR1GYCzgqagmcpQpHCdvCI57RJgIyIjM4';
-        
-        // Fix the client initialization - the correct way to access the Supabase client
-        const { createClient } = supabase;
-        const supabaseClient = createClient(supabaseUrl, supabaseKey);
         
         // DOM elements
         const nameInputOverlay = document.getElementById('nameInputOverlay');
@@ -1053,7 +1114,8 @@
             try {
                 console.log(`Checking if score exists for ${playerName} with score ${score}...`);
                 
-                const { data, error } = await supabaseClient
+                // Use the global supabaseClient
+                const { data, error } = await window.supabaseClient
                     .from('scores')
                     .select('*')
                     .eq('player_name', playerName)
@@ -1086,8 +1148,8 @@
                 submitScoreButton.textContent = "SUBMITTING...";
                 submitScoreButton.disabled = true;
                 
-                // Simple insert to scores table
-                const { data, error } = await supabaseClient
+                // Simple insert to scores table using the global client
+                const { data, error } = await window.supabaseClient
                     .from('scores')
                     .insert([{ 
                         player_name: name.trim(), 
@@ -1132,7 +1194,7 @@
                 console.log("Fetching leaderboard data...");
                 
                 // First, check if we can connect to the database
-                const { data: testData, error: testError } = await supabaseClient
+                const { data: testData, error: testError } = await window.supabaseClient
                     .from('scores')
                     .select('count')
                     .limit(1);
@@ -1143,7 +1205,7 @@
                 }
                 
                 // Now fetch the actual leaderboard data
-                const { data, error } = await supabaseClient
+                const { data, error } = await window.supabaseClient
                     .from('scores')
                     .select('*')
                     .order('score', { ascending: false })
@@ -1179,7 +1241,7 @@
                 console.log("Fetching fresh leaderboard data at", new Date().toISOString());
                 
                 // Force a fresh fetch from the database with cache control
-                const { data: scores, error } = await supabaseClient
+                const { data: scores, error } = await window.supabaseClient
                     .from('scores')
                     .select('*')
                     .order('score', { ascending: false })
@@ -1303,7 +1365,7 @@
             try {
                 console.log("Checking Supabase connection...");
                 // Use a simpler query instead of RPC
-                const { data, error } = await supabaseClient
+                const { data, error } = await window.supabaseClient
                     .from('scores')
                     .select('count')
                     .limit(1);
@@ -1404,7 +1466,7 @@
                 console.log("Testing database connection...");
                 
                 // Try to fetch a single row
-                const { data, error } = await supabaseClient
+                const { data, error } = await window.supabaseClient
                     .from('scores')
                     .select('*')
                     .limit(1);
@@ -1442,7 +1504,7 @@
             try {
                 console.log("Testing SELECT permission...");
                 
-                const { data, error } = await supabaseClient
+                const { data, error } = await window.supabaseClient
                     .from('scores')
                     .select('*')
                     .limit(5);
@@ -1471,74 +1533,183 @@
     
     <!-- Add this script before the closing </body> tag, after your other scripts -->
     <script>
-        // Tutorial functionality
-        const tutorialOverlay = document.getElementById('tutorialOverlay');
-        const startButton = document.getElementById('startButton');
-        
-        // Store the original game start function if it exists
-        const originalStartGame = window.startGame;
-        
-        // Override the startGame function to prevent it from running immediately
-        window.startGame = function() {
-            console.log("Game start intercepted by tutorial");
-            // This function is intentionally empty to prevent the game from starting
-            // The actual game will be started after the tutorial is dismissed
-        };
-        
-        // Initially hide the tutorial
-        tutorialOverlay.style.display = 'none';
-        
-        // Show tutorial when start button is clicked
-        startButton.addEventListener('click', function() {
-            console.log("Start button clicked, showing tutorial");
+        // Single consolidated initialization script
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM Content Loaded - Initializing game systems");
             
-            // Hide start screen
-            document.getElementById('startScreen').style.display = 'none';
+            // Game elements
+            const tutorialOverlay = document.getElementById('tutorialOverlay');
+            const startButton = document.getElementById('startButton');
+            const gameCanvas = document.getElementById('gameCanvas');
+            const titleLeaderboardButton = document.getElementById('titleLeaderboardButton');
+            const refreshLeaderboardButton = document.getElementById('refreshLeaderboardButton');
+            const closeLeaderboardButton = document.getElementById('closeLeaderboardButton');
+            const restartFromLeaderboardButton = document.getElementById('restartFromLeaderboardButton');
             
-            // Show tutorial
-            tutorialOverlay.style.display = 'flex';
+            // Game state
+            let gameStarted = false;
+            let currentScore = 0;
+            let currentPlayerName = '';
             
-            // Set a timer to allow dismissal after 3 seconds
-            let canDismiss = false;
-            setTimeout(() => {
-                canDismiss = true;
-                document.querySelector('.ready-message').style.animation = 'pulse 2s infinite';
-            }, 3000);
+            // Store original game start function
+            const originalStartGame = window.startGame;
             
-            // Listen for any key press to dismiss tutorial
-            const dismissTutorial = function(event) {
-                if (!canDismiss) return; // Ignore input until timer completes
-                
-                // Hide tutorial
+            // Make sure the canvas is visible but game elements are hidden until needed
+            if (gameCanvas) {
+                gameCanvas.style.visibility = 'visible';
+            }
+            
+            // Initially hide the tutorial
+            if (tutorialOverlay) {
                 tutorialOverlay.style.display = 'none';
-                
-                // Remove event listeners
-                document.removeEventListener('keydown', dismissTutorial);
-                document.removeEventListener('click', dismissTutorial);
-                
-                // Add game-active class to body
-                document.body.classList.add('game-active');
-                
-                // Show HUD
-                document.getElementById('hud').style.display = 'flex';
-                document.getElementById('gameHUD').style.display = 'block';
-                
-                // Now actually start the game by calling the original function
-                if (originalStartGame) {
-                    console.log("Starting game after tutorial dismissed");
-                    originalStartGame();
+            }
+            
+            // Remove the game-active class to ensure proper initial state
+            document.body.classList.remove('game-active');
+            
+            // Override the startGame function to control game flow
+            window.startGame = function() {
+                if (gameStarted) {
+                    // If we've already gone through the tutorial, run the original function
+                    if (typeof originalStartGame === 'function') {
+                        console.log("Starting game with original function");
+                        originalStartGame();
+                    }
                 } else {
-                    console.log("No original startGame function found");
+                    console.log("Game start intercepted - waiting for tutorial");
                 }
             };
             
-            document.addEventListener('keydown', dismissTutorial);
-            document.addEventListener('click', dismissTutorial);
-        });
-        
-        // Force the tutorial to be visible if it's not showing
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("DOM loaded, tutorial overlay display style:", tutorialOverlay.style.display);
+            // Clean up any existing event listeners by cloning and replacing elements
+            if (startButton) {
+                const newStartButton = startButton.cloneNode(true);
+                startButton.parentNode.replaceChild(newStartButton, startButton);
+                
+                // Add click handler to the new start button
+                newStartButton.addEventListener('click', function(e) {
+                    console.log("Start button clicked, showing tutorial");
+                    
+                    // Hide start screen
+                    document.getElementById('startScreen').style.display = 'none';
+                    
+                    // Show tutorial
+                    tutorialOverlay.style.display = 'flex';
+                    
+                    // Set a timer to allow dismissal after 1 second
+                    let canDismiss = false;
+                    setTimeout(() => {
+                        canDismiss = true;
+                        const readyMessage = document.querySelector('.ready-message');
+                        if (readyMessage) {
+                            readyMessage.style.animation = 'pulse 2s infinite';
+                        }
+                    }, 1000);
+                    
+                    // Listen for any key press to dismiss tutorial
+                    const dismissTutorial = function(event) {
+                        if (!canDismiss) return; // Ignore input until timer completes
+                        
+                        // Hide tutorial
+                        tutorialOverlay.style.display = 'none';
+                        
+                        // Remove event listeners
+                        document.removeEventListener('keydown', dismissTutorial);
+                        document.removeEventListener('click', dismissTutorial);
+                        
+                        // Add game-active class to body
+                        document.body.classList.add('game-active');
+                        
+                        // Show HUD
+                        document.getElementById('hud').style.display = 'flex';
+                        document.getElementById('gameHUD').style.display = 'block';
+                        
+                        // Now actually start the game
+                        gameStarted = true;
+                        console.log("Starting game after tutorial dismissed");
+                        if (typeof originalStartGame === 'function') {
+                            originalStartGame();
+                        }
+                    };
+                    
+                    document.addEventListener('keydown', dismissTutorial);
+                    document.addEventListener('click', dismissTutorial);
+                });
+            }
+            
+            // Fix leaderboard button handlers
+            if (titleLeaderboardButton) {
+                const newTitleLeaderboardButton = titleLeaderboardButton.cloneNode(true);
+                titleLeaderboardButton.parentNode.replaceChild(newTitleLeaderboardButton, titleLeaderboardButton);
+                
+                newTitleLeaderboardButton.onclick = function() {
+                    console.log("Title screen leaderboard button clicked");
+                    showLeaderboard();
+                };
+            }
+            
+            if (closeLeaderboardButton) {
+                const newCloseBtn = closeLeaderboardButton.cloneNode(true);
+                closeLeaderboardButton.parentNode.replaceChild(newCloseBtn, closeLeaderboardButton);
+                
+                newCloseBtn.onclick = function(e) {
+                    console.log("Close button clicked (direct handler)");
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Hide the leaderboard directly
+                    leaderboardOverlay.classList.remove('active');
+                    leaderboardOverlay.style.opacity = '0';
+                    leaderboardOverlay.style.pointerEvents = 'none';
+                    
+                    return false;
+                };
+            }
+            
+            if (restartFromLeaderboardButton) {
+                const newRestartBtn = restartFromLeaderboardButton.cloneNode(true);
+                restartFromLeaderboardButton.parentNode.replaceChild(newRestartBtn, restartFromLeaderboardButton);
+                
+                newRestartBtn.onclick = function(e) {
+                    console.log("Restart button clicked (direct handler)");
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Hide the leaderboard directly
+                    leaderboardOverlay.classList.remove('active');
+                    leaderboardOverlay.style.opacity = '0';
+                    leaderboardOverlay.style.pointerEvents = 'none';
+                    
+                    // Reload the page
+                    setTimeout(function() {
+                        location.reload();
+                    }, 100);
+                    
+                    return false;
+                };
+            }
+            
+            if (refreshLeaderboardButton) {
+                const newRefreshBtn = refreshLeaderboardButton.cloneNode(true);
+                refreshLeaderboardButton.parentNode.replaceChild(newRefreshBtn, refreshLeaderboardButton);
+                
+                newRefreshBtn.onclick = function() {
+                    console.log("Refresh button clicked");
+                    showLeaderboard(); // Refresh the leaderboard
+                };
+            }
+            
+            // Test database connection on startup
+            testDatabaseConnection().then(result => {
+                console.log("Database connection test result:", result);
+            });
+            
+            // Expose functions to be called from game.js
+            window.gameLeaderboard = {
+                showNameInput,
+                showLeaderboard
+            };
+            
+            console.log("Game initialization complete");
         });
     </script>
 </body>
