@@ -276,7 +276,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 200;
+            z-index: 100;
             opacity: 0;
             transition: opacity 0.5s ease;
         }
@@ -814,6 +814,58 @@
             text-shadow: 0 0 8px #FFFFFF;
             animation: pulse 2s infinite;
         }
+        
+        /* Name input styling */
+        .name-input-title {
+            font-size: 36px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #FF71CE, #01CDFE, #05FFA1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 3px;
+        }
+        
+        .score-display {
+            font-size: 24px;
+            color: #00FFFF;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        
+        .name-input-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        #playerNameInput:focus {
+            outline: none;
+            border-color: #FF00FF;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
+        }
+        
+        #nameInputOverlay {
+            z-index: 250; /* Make sure this is higher than game-over-overlay */
+        }
+        
+        .game-over-overlay {
+            z-index: 100; /* Lower than nameInputOverlay */
+        }
+        
+        /* Add this to your CSS */
+        .highlight-row {
+            background: rgba(255, 0, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5) inset;
+            animation: highlight-pulse 2s infinite;
+        }
+        
+        @keyframes highlight-pulse {
+            0% { background: rgba(255, 0, 255, 0.2); }
+            50% { background: rgba(255, 0, 255, 0.4); }
+            100% { background: rgba(255, 0, 255, 0.2); }
+        }
     </style>
 </head>
 <body>
@@ -844,6 +896,7 @@
         <div class="game-title">VECTOR FLUX</div>
         <button id="startButton">START GAME</button>
         <button id="titleLeaderboardButton" class="title-leaderboard-button">LEADERBOARD</button>
+        <button id="testLeaderboardButton" class="title-leaderboard-button" style="margin-top: 10px; background: linear-gradient(45deg, #FF00FF, #FF71CE);">TEST SCORE SUBMIT</button>
     </div>
     
     <div id="audioControls" class="audio-controls">
@@ -872,6 +925,7 @@
             <input type="text" id="playerNameInput" maxlength="15" placeholder="YOUR NAME HERE" autocomplete="off">
             <div class="name-input-buttons">
                 <button id="submitScoreButton" class="leaderboard-button">SUBMIT</button>
+                <button id="skipSubmitButton" class="leaderboard-button">SKIP</button>
                 <button id="cancelSubmitButton" class="leaderboard-button">CANCEL</button>
             </div>
         </div>
@@ -893,6 +947,7 @@
                 </tbody>
             </table>
             <div class="leaderboard-buttons">
+                <button id="refreshLeaderboardButton" class="leaderboard-button">REFRESH</button>
                 <button id="closeLeaderboardButton" class="leaderboard-button">CLOSE</button>
                 <button id="restartFromLeaderboardButton" class="leaderboard-button">PLAY AGAIN</button>
             </div>
@@ -919,6 +974,7 @@
         const finalScoreDisplay = document.getElementById('finalScoreDisplay');
         const playerNameInput = document.getElementById('playerNameInput');
         const submitScoreButton = document.getElementById('submitScoreButton');
+        const skipSubmitButton = document.getElementById('skipSubmitButton');
         const cancelSubmitButton = document.getElementById('cancelSubmitButton');
         const leaderboardOverlay = document.getElementById('leaderboardOverlay');
         const leaderboardBody = document.getElementById('leaderboardBody');
@@ -943,30 +999,80 @@
             playerNameInput.value = '';
         }
         
+        // Function to check if a specific score exists
+        async function checkIfScoreExists(playerName, score) {
+            try {
+                console.log(`Checking if score exists for ${playerName} with score ${score}...`);
+                
+                const { data, error } = await supabaseClient
+                    .from('scores')
+                    .select('*')
+                    .eq('player_name', playerName)
+                    .eq('score', score);
+                    
+                if (error) {
+                    console.error("Error checking score:", error);
+                    return false;
+                }
+                
+                console.log("Score check result:", data);
+                return data && data.length > 0;
+            } catch (e) {
+                console.error("Exception checking score:", e);
+                return false;
+            }
+        }
+        
         // Function to submit score to Supabase
         async function submitScore(name, score) {
             try {
                 console.log("Submitting score:", name, score);
                 
+                if (!name || name.trim() === '') {
+                    alert("Please enter a name");
+                    return false;
+                }
+                
+                // Show loading state
+                submitScoreButton.textContent = "SUBMITTING...";
+                submitScoreButton.disabled = true;
+                
                 // Simple insert to scores table
                 const { data, error } = await supabaseClient
                     .from('scores')
                     .insert([{ 
-                        player_name: name, 
+                        player_name: name.trim(), 
                         score: score 
                     }]);
                     
                 if (error) {
                     console.error("Error submitting score:", error);
-                    throw error;
+                    alert("Error submitting score: " + error.message);
+                    submitScoreButton.textContent = "SUBMIT";
+                    submitScoreButton.disabled = false;
+                    return false;
                 }
                 
                 console.log("Score submitted successfully:", data);
-                currentPlayerName = name;
+                currentPlayerName = name.trim();
+                currentScore = score;
+                
+                // Verify the score was saved
+                const scoreExists = await checkIfScoreExists(currentPlayerName, currentScore);
+                console.log("Score verification:", scoreExists ? "Found in database" : "Not found in database");
+                
+                submitScoreButton.textContent = "SUBMIT";
+                submitScoreButton.disabled = false;
+                
+                // Show a success message
+                alert("Score submitted successfully!");
+                
                 return true;
             } catch (error) {
                 console.error('Error submitting score:', error);
                 alert("Failed to submit score: " + error.message);
+                submitScoreButton.textContent = "SUBMIT";
+                submitScoreButton.disabled = false;
                 return false;
             }
         }
@@ -974,17 +1080,36 @@
         // Function to fetch leaderboard data
         async function fetchLeaderboard() {
             try {
+                console.log("Fetching leaderboard data...");
+                
+                // First, check if we can connect to the database
+                const { data: testData, error: testError } = await supabaseClient
+                    .from('scores')
+                    .select('count')
+                    .limit(1);
+                    
+                if (testError) {
+                    console.error("Error connecting to database:", testError);
+                    throw new Error("Cannot connect to leaderboard database");
+                }
+                
+                // Now fetch the actual leaderboard data
                 const { data, error } = await supabaseClient
                     .from('scores')
                     .select('*')
                     .order('score', { ascending: false })
                     .limit(10);
                 
-                if (error) throw error;
+                if (error) {
+                    console.error("Error fetching leaderboard data:", error);
+                    throw error;
+                }
                 
+                console.log("Successfully fetched leaderboard data:", data);
                 return data;
             } catch (error) {
-                console.error('Error fetching leaderboard:', error);
+                console.error('Error in fetchLeaderboard:', error);
+                alert("Failed to fetch leaderboard data. Please try again.");
                 return [];
             }
         }
@@ -1001,7 +1126,24 @@
             leaderboardBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Loading scores...</td></tr>';
             
             try {
-                const scores = await fetchLeaderboard();
+                // Add a timestamp to force a fresh fetch
+                console.log("Fetching fresh leaderboard data at", new Date().toISOString());
+                
+                // Force a fresh fetch from the database with cache control
+                const { data: scores, error } = await supabaseClient
+                    .from('scores')
+                    .select('*')
+                    .order('score', { ascending: false })
+                    .limit(10)
+                    .then(result => {
+                        console.log("Raw fetch result:", result);
+                        return result;
+                    });
+                    
+                if (error) {
+                    throw error;
+                }
+                
                 console.log("Fetched scores:", scores);
                 
                 if (!scores || scores.length === 0) {
@@ -1009,11 +1151,23 @@
                     return;
                 }
                 
+                // If we have a current player, check if their score exists
+                if (currentPlayerName && currentScore > 0) {
+                    const scoreExists = await checkIfScoreExists(currentPlayerName, currentScore);
+                    console.log(`Current player score check: ${currentPlayerName} (${currentScore}) - ${scoreExists ? "Found" : "Not found"}`);
+                }
+                
                 leaderboardBody.innerHTML = '';
+                let foundCurrentPlayer = false;
+                
                 scores.forEach((score, index) => {
                     const row = document.createElement('tr');
+                    
+                    // Check if this is the current player's score
                     if (score.player_name === currentPlayerName && score.score === currentScore) {
                         row.classList.add('highlight-row');
+                        foundCurrentPlayer = true;
+                        console.log("Found current player in leaderboard:", currentPlayerName, currentScore);
                     }
                     
                     row.innerHTML = `
@@ -1024,6 +1178,17 @@
                     
                     leaderboardBody.appendChild(row);
                 });
+                
+                // If we didn't find the current player in the top 10, add a message
+                if (currentPlayerName && currentScore > 0 && !foundCurrentPlayer) {
+                    const messageRow = document.createElement('tr');
+                    messageRow.innerHTML = `
+                        <td colspan="3" style="text-align: center; padding-top: 20px; color: #FF71CE;">
+                            Your score of ${currentScore} as ${currentPlayerName} is outside the top 10
+                        </td>
+                    `;
+                    leaderboardBody.appendChild(messageRow);
+                }
             } catch (error) {
                 console.error("Error displaying leaderboard:", error);
                 leaderboardBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Error loading scores</td></tr>';
@@ -1039,27 +1204,28 @@
         submitScoreButton.onclick = async function() {
             const name = playerNameInput.value.trim();
             if (name) {
+                console.log("Submitting score for:", name, currentScore);
                 const success = await submitScore(name, currentScore);
                 if (success) {
                     hideNameInput();
-                    showLeaderboard();
+                    // Add a small delay before showing the leaderboard to ensure the database has updated
+                    setTimeout(() => {
+                        showLeaderboard();
+                    }, 500);
                 }
+            } else {
+                alert("Please enter your name");
             }
+        };
+        
+        skipSubmitButton.onclick = function() {
+            hideNameInput();
+            showLeaderboard(); // Show leaderboard without submitting
         };
         
         cancelSubmitButton.onclick = function() {
             hideNameInput();
         };
-        
-        // Remove these as we're setting them in the DOMContentLoaded handler
-        // closeLeaderboardButton.addEventListener('click', () => {
-        //     hideLeaderboard();
-        // });
-        
-        // restartFromLeaderboardButton.addEventListener('click', () => {
-        //     hideLeaderboard();
-        //     location.reload();
-        // });
         
         // Add event listener for Enter key on name input
         playerNameInput.addEventListener('keyup', (event) => {
@@ -1129,6 +1295,15 @@
                 hideLeaderboard();
                 location.reload();
             };
+            
+            // Add test button functionality
+            const testLeaderboardButton = document.getElementById('testLeaderboardButton');
+            if (testLeaderboardButton) {
+                testLeaderboardButton.onclick = function() {
+                    console.log("Test leaderboard button clicked");
+                    showNameInput(Math.floor(Math.random() * 10000)); // Show name input with random score
+                };
+            }
         });
         
         // Add this immediately after your existing script
@@ -1182,6 +1357,73 @@
                 return false;
             };
         };
+        
+        // Add this function to test the database connection
+        async function testDatabaseConnection() {
+            try {
+                console.log("Testing database connection...");
+                
+                // Try to fetch a single row
+                const { data, error } = await supabaseClient
+                    .from('scores')
+                    .select('*')
+                    .limit(1);
+                    
+                if (error) {
+                    console.error("Database connection error:", error);
+                    return false;
+                }
+                
+                console.log("Database connection successful, sample data:", data);
+                return true;
+            } catch (e) {
+                console.error("Exception testing database connection:", e);
+                return false;
+            }
+        }
+        
+        // Call this function when the page loads
+        window.addEventListener('DOMContentLoaded', async () => {
+            const connected = await testDatabaseConnection();
+            console.log("Database connection test result:", connected);
+        });
+        
+        // Add this to your DOMContentLoaded event listener
+        const refreshLeaderboardButton = document.getElementById('refreshLeaderboardButton');
+        if (refreshLeaderboardButton) {
+            refreshLeaderboardButton.onclick = function() {
+                console.log("Refresh button clicked");
+                showLeaderboard(); // Refresh the leaderboard
+            };
+        }
+        
+        // Add this function to test SELECT permissions
+        async function testSelectPermission() {
+            try {
+                console.log("Testing SELECT permission...");
+                
+                const { data, error } = await supabaseClient
+                    .from('scores')
+                    .select('*')
+                    .limit(5);
+                    
+                if (error) {
+                    console.error("SELECT permission test failed:", error);
+                    return false;
+                }
+                
+                console.log("SELECT permission test succeeded, data:", data);
+                return true;
+            } catch (e) {
+                console.error("Exception testing SELECT permission:", e);
+                return false;
+            }
+        }
+        
+        // Call this function to test
+        testSelectPermission().then(result => {
+            console.log("SELECT permission test result:", result ? "Success" : "Failed");
+        });
     </script>
     
     <!-- Add game.js after the Supabase initialization -->

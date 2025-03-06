@@ -334,6 +334,8 @@ function gameLoop(timestamp) {
             if (health <= 0) {
                 // Create explosion at player position
                 createExplosion(player.x, player.y, 0);
+                
+                // Show game over screen (which will handle the leaderboard)
                 showGameOver();
             }
             
@@ -1699,7 +1701,7 @@ function updateHUD() {
     }
 }
 
-// Improve the showGameOver function with a more dramatic animation
+// Restore the original showGameOver function with leaderboard integration
 function showGameOver() {
     console.log("Game Over!");
     
@@ -1756,6 +1758,9 @@ function showGameOver() {
     // Add screen shake for dramatic effect
     addScreenShake(1.5);
     
+    // Store the final score for leaderboard submission
+    const finalScore = score;
+    
     // Dramatic flash sequence
     setTimeout(() => {
         flashOverlay.style.opacity = '1';
@@ -1777,6 +1782,12 @@ function showGameOver() {
                 
                 // Now show the game over screen
                 showGameOverScreen();
+                
+                // Show the leaderboard input after the game over screen is displayed
+                setTimeout(() => {
+                    console.log("Calling handleGameOver with score:", finalScore);
+                    handleGameOver(finalScore);
+                }, 3000); // 3 second delay after game over screen appears
             }, 500);
         }, 300);
     }, 200);
@@ -3971,4 +3982,27 @@ function drawPlayerShield() {
     
     // Restore context
     ctx.restore();
+}
+
+// Update the handleGameOver function to work with the existing game over overlay
+function handleGameOver(finalScore) {
+    console.log("Game over! Final score:", finalScore);
+    
+    // Check if the gameLeaderboard object exists
+    if (window.gameLeaderboard && typeof window.gameLeaderboard.showNameInput === 'function') {
+        console.log("gameLeaderboard object found, showing name input");
+        
+        // Make sure any game over overlay doesn't block our input
+        const gameOverOverlay = document.getElementById('gameOverOverlay');
+        if (gameOverOverlay) {
+            console.log("Setting game over overlay to lower z-index");
+            gameOverOverlay.style.zIndex = "100"; // Lower z-index
+        }
+        
+        // Show the name input overlay with the final score
+        window.gameLeaderboard.showNameInput(finalScore);
+    } else {
+        console.error("gameLeaderboard object not found or showNameInput is not a function");
+        console.log("window.gameLeaderboard:", window.gameLeaderboard);
+    }
 }
