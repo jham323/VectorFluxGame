@@ -474,6 +474,346 @@
             margin-top: 10px;
             font-size: 18px;
         }
+        
+        /* Leaderboard styling */
+        #leaderboardOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 51, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        #leaderboardOverlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .leaderboard-container {
+            width: 80%;
+            max-width: 600px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 2px solid #FF00FF;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px #00FFFF;
+        }
+        
+        .leaderboard-title {
+            font-size: 36px;
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #FF71CE, #01CDFE, #05FFA1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 3px;
+        }
+        
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        
+        .leaderboard-table th, 
+        .leaderboard-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        
+        .leaderboard-table th {
+            color: #00FFFF;
+            letter-spacing: 2px;
+            font-size: 18px;
+        }
+        
+        .leaderboard-table tr:nth-child(even) {
+            background-color: rgba(0, 0, 51, 0.5);
+        }
+        
+        .leaderboard-table tr:hover {
+            background-color: rgba(1, 205, 254, 0.2);
+        }
+        
+        .leaderboard-table .highlight-row {
+            background-color: rgba(255, 0, 255, 0.3) !important;
+        }
+        
+        .leaderboard-rank {
+            text-align: center;
+            font-weight: bold;
+            color: #FF71CE;
+        }
+        
+        .leaderboard-score {
+            text-align: right;
+            color: #05FFA1;
+            font-weight: bold;
+        }
+        
+        .leaderboard-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .leaderboard-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: linear-gradient(45deg, #FF00FF, #01CDFE);
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(1, 205, 254, 0.7);
+        }
+        
+        .leaderboard-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.8);
+        }
+        
+        /* Fix name input styling */
+        #nameInputOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 51, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 250;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        #nameInputOverlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .name-input-container {
+            width: 80%;
+            max-width: 500px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 2px solid #FF00FF;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px #00FFFF;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #playerNameInput {
+            width: 80%;
+            padding: 15px;
+            font-size: 20px;
+            background-color: rgba(0, 0, 51, 0.7);
+            border: 2px solid #01CDFE;
+            border-radius: 5px;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 30px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        /* Title screen leaderboard button styling */
+        .title-leaderboard-button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 20px;
+            background: linear-gradient(45deg, #01CDFE, #05FFA1);
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(1, 205, 254, 0.7);
+        }
+        
+        .title-leaderboard-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(5, 255, 161, 0.7);
+        }
+        
+        /* Tutorial overlay styles */
+        .tutorial-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 51, 0.85);
+            z-index: 2000;
+            transition: opacity 0.5s ease;
+        }
+        
+        .tutorial-container {
+            background: rgba(45, 27, 78, 0.9);
+            padding: 30px;
+            border-radius: 5px;
+            border: 2px solid #FF00FF;
+            box-shadow: 0 0 30px #00FFFF, inset 0 0 20px rgba(1, 205, 254, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 600px;
+            width: 80%;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .tutorial-title {
+            margin-bottom: 25px;
+            font-size: 36px;
+            color: #00FFFF;
+            text-shadow: 0 0 10px #00FFFF;
+            letter-spacing: 3px;
+            text-align: center;
+        }
+        
+        .keyboard-layout {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        
+        .keyboard-side {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .left-side {
+            width: 40%;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .right-side {
+            width: 60%;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .arrow-keys-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .arrow-grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .up-cell {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .arrow-middle-row {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .arrow-key-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 10px;
+            width: 80px;
+        }
+        
+        .key {
+            background: rgba(255, 0, 255, 0.3);
+            border: 1px solid #FF71CE;
+            border-radius: 5px;
+            padding: 8px 12px;
+            text-align: center;
+            color: #FFFFFF;
+            font-size: 18px;
+            box-shadow: 0 0 10px rgba(255, 113, 206, 0.5);
+            text-shadow: 0 0 5px #FFFFFF;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .arrow-key {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+        
+        .special-key {
+            width: 120px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .action {
+            color: #05FFA1;
+            font-size: 16px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px #05FFA1;
+            text-align: center;
+            width: 100%;
+            display: block;
+        }
+        
+        .ready-message {
+            margin-top: 20px;
+            color: #FFFFFF;
+            font-size: 22px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px #FFFFFF;
+            animation: pulse 2s infinite;
+        }
     </style>
 </head>
 <body>
@@ -501,7 +841,9 @@
     <canvas id="gameCanvas" width="1000" height="700"></canvas>
     
     <div id="startScreen">
+        <div class="game-title">VECTOR FLUX</div>
         <button id="startButton">START GAME</button>
+        <button id="titleLeaderboardButton" class="title-leaderboard-button">LEADERBOARD</button>
     </div>
     
     <div id="audioControls" class="audio-controls">
@@ -523,6 +865,326 @@
         Your browser does not support the audio element.
     </audio>
     
+    <div id="nameInputOverlay">
+        <div class="name-input-container">
+            <div class="name-input-title">ENTER YOUR NAME</div>
+            <div class="score-display">SCORE: <span id="finalScoreDisplay">0</span></div>
+            <input type="text" id="playerNameInput" maxlength="15" placeholder="YOUR NAME HERE" autocomplete="off">
+            <div class="name-input-buttons">
+                <button id="submitScoreButton" class="leaderboard-button">SUBMIT</button>
+                <button id="cancelSubmitButton" class="leaderboard-button">CANCEL</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="leaderboardOverlay">
+        <div class="leaderboard-container">
+            <div class="leaderboard-title">TOP PILOTS</div>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th width="15%">RANK</th>
+                        <th width="55%">PILOT</th>
+                        <th width="30%">SCORE</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    <!-- Leaderboard entries will be inserted here -->
+                </tbody>
+            </table>
+            <div class="leaderboard-buttons">
+                <button id="closeLeaderboardButton" class="leaderboard-button">CLOSE</button>
+                <button id="restartFromLeaderboardButton" class="leaderboard-button">PLAY AGAIN</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Supabase JS library -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Add these near the beginning of your script
+        console.log("Leaderboard script loaded");
+        
+        // Supabase configuration
+        const supabaseUrl = 'https://oarddtfmzfjfnbbzgwsu.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hcmRkdGZtemZqZm5iYnpnd3N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyMDk3OTAsImV4cCI6MjA1Njc4NTc5MH0.gACJkEXr17AR1GYCzgqagmcpQpHCdvCI57RJgIyIjM4';
+        
+        // Fix the client initialization - the correct way to access the Supabase client
+        const { createClient } = supabase;
+        const supabaseClient = createClient(supabaseUrl, supabaseKey);
+        
+        // DOM elements
+        const nameInputOverlay = document.getElementById('nameInputOverlay');
+        const finalScoreDisplay = document.getElementById('finalScoreDisplay');
+        const playerNameInput = document.getElementById('playerNameInput');
+        const submitScoreButton = document.getElementById('submitScoreButton');
+        const cancelSubmitButton = document.getElementById('cancelSubmitButton');
+        const leaderboardOverlay = document.getElementById('leaderboardOverlay');
+        const leaderboardBody = document.getElementById('leaderboardBody');
+        const closeLeaderboardButton = document.getElementById('closeLeaderboardButton');
+        const restartFromLeaderboardButton = document.getElementById('restartFromLeaderboardButton');
+        
+        let currentScore = 0;
+        let currentPlayerName = '';
+        
+        // Function to show name input overlay
+        function showNameInput(score) {
+            console.log("showNameInput called with score:", score);
+            currentScore = score;
+            finalScoreDisplay.textContent = score;
+            nameInputOverlay.classList.add('active');
+            playerNameInput.focus();
+        }
+        
+        // Function to hide name input overlay
+        function hideNameInput() {
+            nameInputOverlay.classList.remove('active');
+            playerNameInput.value = '';
+        }
+        
+        // Function to submit score to Supabase
+        async function submitScore(name, score) {
+            try {
+                console.log("Submitting score:", name, score);
+                
+                // Simple insert to scores table
+                const { data, error } = await supabaseClient
+                    .from('scores')
+                    .insert([{ 
+                        player_name: name, 
+                        score: score 
+                    }]);
+                    
+                if (error) {
+                    console.error("Error submitting score:", error);
+                    throw error;
+                }
+                
+                console.log("Score submitted successfully:", data);
+                currentPlayerName = name;
+                return true;
+            } catch (error) {
+                console.error('Error submitting score:', error);
+                alert("Failed to submit score: " + error.message);
+                return false;
+            }
+        }
+        
+        // Function to fetch leaderboard data
+        async function fetchLeaderboard() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('scores')
+                    .select('*')
+                    .order('score', { ascending: false })
+                    .limit(10);
+                
+                if (error) throw error;
+                
+                return data;
+            } catch (error) {
+                console.error('Error fetching leaderboard:', error);
+                return [];
+            }
+        }
+        
+        // Function to display leaderboard
+        async function showLeaderboard() {
+            console.log("showLeaderboard called");
+            
+            // Force show the overlay
+            leaderboardOverlay.style.opacity = '1';
+            leaderboardOverlay.style.pointerEvents = 'auto';
+            leaderboardOverlay.classList.add('active');
+            
+            leaderboardBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Loading scores...</td></tr>';
+            
+            try {
+                const scores = await fetchLeaderboard();
+                console.log("Fetched scores:", scores);
+                
+                if (!scores || scores.length === 0) {
+                    leaderboardBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No scores yet!</td></tr>';
+                    return;
+                }
+                
+                leaderboardBody.innerHTML = '';
+                scores.forEach((score, index) => {
+                    const row = document.createElement('tr');
+                    if (score.player_name === currentPlayerName && score.score === currentScore) {
+                        row.classList.add('highlight-row');
+                    }
+                    
+                    row.innerHTML = `
+                        <td class="leaderboard-rank">${index + 1}</td>
+                        <td>${score.player_name}</td>
+                        <td class="leaderboard-score">${score.score}</td>
+                    `;
+                    
+                    leaderboardBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error displaying leaderboard:", error);
+                leaderboardBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Error loading scores</td></tr>';
+            }
+        }
+        
+        // Function to hide leaderboard
+        function hideLeaderboard() {
+            leaderboardOverlay.classList.remove('active');
+        }
+        
+        // Replace these event listeners with simpler ones
+        submitScoreButton.onclick = async function() {
+            const name = playerNameInput.value.trim();
+            if (name) {
+                const success = await submitScore(name, currentScore);
+                if (success) {
+                    hideNameInput();
+                    showLeaderboard();
+                }
+            }
+        };
+        
+        cancelSubmitButton.onclick = function() {
+            hideNameInput();
+        };
+        
+        // Remove these as we're setting them in the DOMContentLoaded handler
+        // closeLeaderboardButton.addEventListener('click', () => {
+        //     hideLeaderboard();
+        // });
+        
+        // restartFromLeaderboardButton.addEventListener('click', () => {
+        //     hideLeaderboard();
+        //     location.reload();
+        // });
+        
+        // Add event listener for Enter key on name input
+        playerNameInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                submitScoreButton.click();
+            }
+        });
+        
+        // Expose functions to be called from game.js
+        window.gameLeaderboard = {
+            showNameInput,
+            showLeaderboard
+        };
+        
+        // Test function to check if leaderboard is working
+        window.testLeaderboard = function() {
+            console.log("Testing leaderboard...");
+            showNameInput(1000); // Show name input with test score
+        };
+        
+        // Add this at the end
+        console.log("gameLeaderboard object created:", window.gameLeaderboard);
+        
+        // Remove the problematic RPC call
+        async function checkSupabaseTables() {
+            try {
+                console.log("Checking Supabase connection...");
+                // Use a simpler query instead of RPC
+                const { data, error } = await supabaseClient
+                    .from('scores')
+                    .select('count')
+                    .limit(1);
+                    
+                if (error) {
+                    console.error("Error checking scores table:", error);
+                    return;
+                }
+                
+                console.log("Scores table exists and is accessible");
+            } catch (error) {
+                console.error("Failed to check tables:", error);
+            }
+        }
+        
+        // Simplify the event listeners for the leaderboard buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Setting up leaderboard buttons...");
+            
+            // Set up the title screen leaderboard button
+            const titleLeaderboardButton = document.getElementById('titleLeaderboardButton');
+            if (titleLeaderboardButton) {
+                titleLeaderboardButton.onclick = function() {
+                    console.log("Title screen leaderboard button clicked");
+                    showLeaderboard();
+                };
+            }
+            
+            // Fix the close button
+            document.getElementById('closeLeaderboardButton').onclick = function() {
+                console.log("Close button clicked");
+                hideLeaderboard();
+            };
+            
+            // Fix the restart button
+            document.getElementById('restartFromLeaderboardButton').onclick = function() {
+                console.log("Restart button clicked");
+                hideLeaderboard();
+                location.reload();
+            };
+        });
+        
+        // Add this immediately after your existing script
+        // Direct fix for the close button
+        window.onload = function() {
+            console.log("Window loaded - fixing close button");
+            
+            // Get the close button
+            const closeBtn = document.getElementById('closeLeaderboardButton');
+            
+            // Remove any existing event listeners
+            const newCloseBtn = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+            
+            // Add a direct onclick handler
+            newCloseBtn.onclick = function(e) {
+                console.log("Close button clicked (direct handler)");
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Hide the leaderboard directly
+                const leaderboardOverlay = document.getElementById('leaderboardOverlay');
+                leaderboardOverlay.classList.remove('active');
+                leaderboardOverlay.style.opacity = '0';
+                leaderboardOverlay.style.pointerEvents = 'none';
+                
+                return false;
+            };
+            
+            // Also fix the restart button
+            const restartBtn = document.getElementById('restartFromLeaderboardButton');
+            const newRestartBtn = restartBtn.cloneNode(true);
+            restartBtn.parentNode.replaceChild(newRestartBtn, restartBtn);
+            
+            newRestartBtn.onclick = function(e) {
+                console.log("Restart button clicked (direct handler)");
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Hide the leaderboard directly
+                const leaderboardOverlay = document.getElementById('leaderboardOverlay');
+                leaderboardOverlay.classList.remove('active');
+                leaderboardOverlay.style.opacity = '0';
+                leaderboardOverlay.style.pointerEvents = 'none';
+                
+                // Reload the page
+                setTimeout(function() {
+                    location.reload();
+                }, 100);
+                
+                return false;
+            };
+        };
+    </script>
+    
+    <!-- Add game.js after the Supabase initialization -->
     <script src="game.js"></script>
 </body>
 </html> 
