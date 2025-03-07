@@ -1313,6 +1313,9 @@
         
         // Replace these event listeners with simpler ones
         submitScoreButton.onclick = async function() {
+            // Play button sound
+            playSoundEffect('button');
+            
             const name = playerNameInput.value.trim();
             if (name) {
                 console.log("Submitting score for:", name, currentScore);
@@ -1330,11 +1333,17 @@
         };
         
         skipSubmitButton.onclick = function() {
+            // Play button sound
+            playSoundEffect('button');
+            
             hideNameInput();
             showLeaderboard(); // Show leaderboard without submitting
         };
         
         cancelSubmitButton.onclick = function() {
+            // Play button sound
+            playSoundEffect('button');
+            
             hideNameInput();
         };
         
@@ -1390,6 +1399,8 @@
             if (titleLeaderboardButton) {
                 titleLeaderboardButton.onclick = function() {
                     console.log("Title screen leaderboard button clicked");
+                    // Play button sound
+                    playSoundEffect('button');
                     showLeaderboard();
                 };
             }
@@ -1397,12 +1408,16 @@
             // Fix the close button
             document.getElementById('closeLeaderboardButton').onclick = function() {
                 console.log("Close button clicked");
+                // Play button sound
+                playSoundEffect('button');
                 hideLeaderboard();
             };
             
             // Fix the restart button
             document.getElementById('restartFromLeaderboardButton').onclick = function() {
                 console.log("Restart button clicked");
+                // Play button sound
+                playSoundEffect('button');
                 hideLeaderboard();
                 location.reload();
             };
@@ -1426,6 +1441,9 @@
                 e.preventDefault();
                 e.stopPropagation();
                 
+                // Play button sound
+                playSoundEffect('button');
+                
                 // Hide the leaderboard directly
                 const leaderboardOverlay = document.getElementById('leaderboardOverlay');
                 leaderboardOverlay.classList.remove('active');
@@ -1444,6 +1462,9 @@
                 console.log("Restart button clicked (direct handler)");
                 e.preventDefault();
                 e.stopPropagation();
+                
+                // Play button sound
+                playSoundEffect('button');
                 
                 // Hide the leaderboard directly
                 const leaderboardOverlay = document.getElementById('leaderboardOverlay');
@@ -1495,6 +1516,8 @@
         if (refreshLeaderboardButton) {
             refreshLeaderboardButton.onclick = function() {
                 console.log("Refresh button clicked");
+                // Play button sound
+                playSoundEffect('button');
                 showLeaderboard(); // Refresh the leaderboard
             };
         }
@@ -1589,6 +1612,9 @@
                 newStartButton.addEventListener('click', function(e) {
                     console.log("Start button clicked, showing tutorial");
                     
+                    // Play button sound
+                    playSoundEffect('button');
+                    
                     // Hide start screen
                     document.getElementById('startScreen').style.display = 'none';
                     
@@ -1643,6 +1669,8 @@
                 
                 newTitleLeaderboardButton.onclick = function() {
                     console.log("Title screen leaderboard button clicked");
+                    // Play button sound
+                    playSoundEffect('button');
                     showLeaderboard();
                 };
             }
@@ -1655,6 +1683,9 @@
                     console.log("Close button clicked (direct handler)");
                     e.preventDefault();
                     e.stopPropagation();
+                    
+                    // Play button sound
+                    playSoundEffect('button');
                     
                     // Hide the leaderboard directly
                     leaderboardOverlay.classList.remove('active');
@@ -1673,6 +1704,9 @@
                     console.log("Restart button clicked (direct handler)");
                     e.preventDefault();
                     e.stopPropagation();
+                    
+                    // Play button sound
+                    playSoundEffect('button');
                     
                     // Hide the leaderboard directly
                     leaderboardOverlay.classList.remove('active');
@@ -1694,6 +1728,8 @@
                 
                 newRefreshBtn.onclick = function() {
                     console.log("Refresh button clicked");
+                    // Play button sound
+                    playSoundEffect('button');
                     showLeaderboard(); // Refresh the leaderboard
                 };
             }

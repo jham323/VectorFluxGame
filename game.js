@@ -19,6 +19,20 @@ const gameMusic = document.getElementById('gameMusic');
 const toggleAudioButton = document.getElementById('toggleAudio');
 const audioIcon = document.getElementById('audioIcon');
 
+// Sound effects
+const soundEffects = {
+    laser: null,
+    torpedo: null,
+    enemyHit: null,
+    enemyExplosion: null,
+    playerHit: null,
+    shieldDown: null,
+    playerExplosion: null,
+    button: null // Add button sound
+};
+
+let sfxEnabled = true; // Enable sound effects by default
+
 // Make sure canvas is properly sized
 canvas.width = 1000;
 canvas.height = 700;
@@ -122,6 +136,9 @@ function handleKeyUp(e) {
 // Restore the player entrance animation and fix enemy spawning
 function startGame() {
     console.log("Game started!");
+    
+    // Play button sound
+    playSoundEffect('button');
     
     // Reset game state
     gameStarted = true;
@@ -588,6 +605,9 @@ function drawTargetingSight() {
 // Function to handle shooting through the targeting sight
 function shoot() {
     console.log("Shooting!"); // Debug log
+    
+    // Play laser sound effect
+    playSoundEffect('laser');
     
     // Make sure player has a sight position
     if (!player.sightX || !player.sightY) {
@@ -1289,6 +1309,9 @@ function checkCollisions() {
                         createHitEffect(e.x, e.y, e.z);
                     }
                     
+                    // Play enemy hit sound
+                    playSoundEffect('enemyHit');
+                    
                     // Reduce enemy health
                     e.health -= 10;
                     
@@ -1302,6 +1325,9 @@ function checkCollisions() {
                         if (typeof createExplosion === 'function') {
                             createExplosion(e.x, e.y, e.z);
                         }
+                        
+                        // Play enemy explosion sound
+                        playSoundEffect('enemyExplosion');
                         
                         // Remove enemy
                         enemies.splice(j, 1);
@@ -1335,6 +1361,9 @@ function checkCollisions() {
                         createHitEffect(e.x, e.y, e.z);
                     }
                     
+                    // Play enemy hit sound
+                    playSoundEffect('enemyHit');
+                    
                     // Reduce enemy health
                     e.health -= 10;
                     
@@ -1348,6 +1377,9 @@ function checkCollisions() {
                         if (typeof createExplosion === 'function') {
                             createExplosion(e.x, e.y, e.z);
                         }
+                        
+                        // Play enemy explosion sound
+                        playSoundEffect('enemyExplosion');
                         
                         // Remove enemy
                         enemies.splice(j, 1);
@@ -1410,16 +1442,27 @@ function checkCollisions() {
                 // Damage shields first
                 player.shields--;
                 console.log("Shields hit! Remaining shields:", player.shields);
+                
+                // Play player hit sound
+                playSoundEffect('playerHit');
             
-            // Add screen shake
+                // Add screen shake
                 addScreenShake(0.3);
                 
                 // Create shield impact effect
                 createShieldImpact();
+                
+                // Play shield down sound if shields depleted
+                if (player.shields === 0) {
+                    playSoundEffect('shieldDown');
+                }
             } else {
                 // Damage hull when shields are depleted
                 player.hull--;
                 console.log("Hull hit! Remaining hull:", player.hull);
+                
+                // Play player hit sound
+                playSoundEffect('playerHit');
                 
                 // Add stronger screen shake for hull hits
                 addScreenShake(0.6);
@@ -1430,6 +1473,10 @@ function checkCollisions() {
                 // Check if player is destroyed
                 if (player.hull <= 0) {
                     console.log("Player destroyed!");
+                    
+                    // Play player explosion sound
+                    playSoundEffect('playerExplosion');
+                    
                     createExplosion(player.x, player.y, 0);
                     showGameOver();
                     return; // Exit the function to prevent further processing
@@ -1466,6 +1513,10 @@ function checkCollisions() {
             
             // Remove the enemy
             createExplosion(enemy.x, enemy.y, enemy.z);
+            
+            // Play enemy explosion sound
+            playSoundEffect('enemyExplosion');
+            
             enemies.splice(i, 1);
             i--;
             
@@ -1475,15 +1526,26 @@ function checkCollisions() {
                 player.shields--;
                 console.log("Shields hit! Remaining shields:", player.shields);
                 
+                // Play player hit sound
+                playSoundEffect('playerHit');
+                
                 // Add screen shake
                 addScreenShake(0.3);
                 
                 // Create shield impact effect
                 createShieldImpact();
+                
+                // Play shield down sound if shields depleted
+                if (player.shields === 0) {
+                    playSoundEffect('shieldDown');
+                }
             } else {
                 // Damage hull when shields are depleted
                 player.hull--;
                 console.log("Hull hit! Remaining hull:", player.hull);
+                
+                // Play player hit sound
+                playSoundEffect('playerHit');
                 
                 // Add stronger screen shake for hull hits
                 addScreenShake(0.6);
@@ -1850,6 +1912,9 @@ function showGameOver() {
             restartButton.className = 'restart-button';
             restartButton.textContent = 'RESTART';
             restartButton.addEventListener('click', () => {
+                // Play button sound
+                playSoundEffect('button');
+                
                 gameOverOverlay.style.opacity = '0';
                 setTimeout(() => {
                     restartGame(); // Use our new function instead of directly calling startGame
@@ -2527,6 +2592,9 @@ function updateEnemies(deltaTime) {
             
             projectiles.push(projectile);
             
+            // Play torpedo sound effect
+            playSoundEffect('torpedo');
+            
             // Reset shot timer
             e.lastShot = now;
             
@@ -3034,11 +3102,64 @@ function initAudio() {
             gameMusic.play().catch(e => console.log("Audio play failed:", e));
         }
     });
+    
+    // Initialize sound effects
+    initSoundEffects();
+}
+
+// Initialize sound effects
+function initSoundEffects() {
+    // Create audio objects for each sound effect
+    soundEffects.laser = new Audio('audio/sfx/laser.mp3');
+    soundEffects.torpedo = new Audio('audio/sfx/torpedo.mp3');
+    soundEffects.enemyHit = new Audio('audio/sfx/enemy_hit.mp3');
+    soundEffects.enemyExplosion = new Audio('audio/sfx/enemy_explosion.mp3');
+    soundEffects.playerHit = new Audio('audio/sfx/player_hit.mp3');
+    soundEffects.shieldDown = new Audio('audio/sfx/shield_down.mp3');
+    soundEffects.playerExplosion = new Audio('audio/sfx/player_explosion.mp3');
+    soundEffects.button = new Audio('audio/sfx/button.mp3');
+    
+    // Set volume for all sound effects
+    for (const sound in soundEffects) {
+        if (soundEffects[sound]) {
+            soundEffects[sound].volume = 0.4;
+        }
+    }
+    
+    // Reduce laser sound volume by 20%
+    if (soundEffects.laser) {
+        soundEffects.laser.volume = 0.32; // 0.4 * 0.8 = 0.32 (20% reduction)
+    }
+    
+    // Reduce enemy hit sound volume
+    if (soundEffects.enemyHit) {
+        soundEffects.enemyHit.volume = 0.32; // Also reduce by 20%
+    }
+}
+
+// Function to play a sound effect
+function playSoundEffect(name) {
+    if (!sfxEnabled || !soundEffects[name]) return;
+    
+    // Clone the audio to allow overlapping sounds
+    const sound = soundEffects[name].cloneNode();
+    sound.volume = soundEffects[name].volume;
+    sound.play().catch(e => console.log(`Failed to play ${name} sound:`, e));
+    
+    // Clean up clone after it finishes playing
+    sound.onended = () => {
+        sound.onended = null;
+    };
 }
 
 // Toggle audio on/off
 function toggleAudio() {
+    // Play button sound before toggling music
+    // We play this even if sfxEnabled is about to be turned off
+    playSoundEffect('button');
+    
     musicEnabled = !musicEnabled;
+    sfxEnabled = musicEnabled; // Toggle sound effects along with music
     console.log("Toggle audio called, musicEnabled =", musicEnabled, "currentTrack =", currentTrack);
     
     if (musicEnabled) {
