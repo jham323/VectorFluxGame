@@ -19,6 +19,11 @@ const gameMusic = document.getElementById('gameMusic');
 const toggleAudioButton = document.getElementById('toggleAudio');
 const audioIcon = document.getElementById('audioIcon');
 
+// Get base URL for assets (resolves GitHub Pages path issues)
+const baseUrl = window.location.href.includes('github.io') 
+    ? 'https://jham323.github.io/VectorFluxGame/' 
+    : '';
+
 // Sound effects
 const soundEffects = {
     laser: null,
@@ -31,7 +36,12 @@ const soundEffects = {
     button: null // Add button sound
 };
 
+// Debugging flag for audio issues
+const debugAudio = true;
+
+// Audio state
 let sfxEnabled = true; // Enable sound effects by default
+let soundsInitialized = false; // Track initialization state
 
 // Make sure canvas is properly sized
 canvas.width = 1000;
@@ -3109,47 +3119,116 @@ function initAudio() {
 
 // Initialize sound effects
 function initSoundEffects() {
-    // Create audio objects for each sound effect
-    soundEffects.laser = new Audio('audio/sfx/laser.mp3');
-    soundEffects.torpedo = new Audio('audio/sfx/torpedo.mp3');
-    soundEffects.enemyHit = new Audio('audio/sfx/enemy_hit.mp3');
-    soundEffects.enemyExplosion = new Audio('audio/sfx/enemy_explosion.mp3');
-    soundEffects.playerHit = new Audio('audio/sfx/player_hit.mp3');
-    soundEffects.shieldDown = new Audio('audio/sfx/shield_down.mp3');
-    soundEffects.playerExplosion = new Audio('audio/sfx/player_explosion.mp3');
-    soundEffects.button = new Audio('audio/sfx/button.mp3');
+    if (soundsInitialized) {
+        if (debugAudio) console.log('Sound effects already initialized');
+        return;
+    }
     
-    // Set volume for all sound effects
-    for (const sound in soundEffects) {
-        if (soundEffects[sound]) {
-            soundEffects[sound].volume = 0.4;
+    if (debugAudio) console.log('Initializing sound effects with baseUrl:', baseUrl);
+    
+    // Create audio objects for each sound effect with proper error handling
+    try {
+        // Map of sound effect names to file paths
+        const soundPaths = {
+            laser: 'audio/sfx/laser.mp3',
+            torpedo: 'audio/sfx/torpedo.mp3',
+            enemyHit: 'audio/sfx/enemy_hit.mp3',
+            enemyExplosion: 'audio/sfx/enemy_explosion.mp3',
+            playerHit: 'audio/sfx/player_hit.mp3',
+            shieldDown: 'audio/sfx/shield_down.mp3',
+            playerExplosion: 'audio/sfx/player_explosion.mp3',
+            button: 'audio/sfx/button.mp3'
+        };
+        
+        // Initialize each sound effect
+        for (const [name, path] of Object.entries(soundPaths)) {
+            const fullPath = baseUrl + path;
+            
+            if (debugAudio) console.log(`Loading sound: ${name} from ${fullPath}`);
+            
+            soundEffects[name] = new Audio(fullPath);
+            
+            // Add error handling to each Audio element
+            soundEffects[name].onerror = (e) => {
+                console.error(`Error loading sound ${name} from ${fullPath}:`, e);
+            };
+            
+            // Set default volume
+            soundEffects[name].volume = 0.4;
+            
+            // Preload audio
+            soundEffects[name].load();
         }
-    }
-    
-    // Reduce laser sound volume by 20%
-    if (soundEffects.laser) {
-        soundEffects.laser.volume = 0.32; // 0.4 * 0.8 = 0.32 (20% reduction)
-    }
-    
-    // Reduce enemy hit sound volume
-    if (soundEffects.enemyHit) {
-        soundEffects.enemyHit.volume = 0.32; // Also reduce by 20%
+        
+        // Apply specific volume adjustments
+        if (soundEffects.laser) {
+            soundEffects.laser.volume = 0.32; // 0.4 * 0.8 = 0.32 (20% reduction)
+        }
+        
+        if (soundEffects.enemyHit) {
+            soundEffects.enemyHit.volume = 0.32; // Also reduce by 20%
+        }
+        
+        soundsInitialized = true;
+        if (debugAudio) console.log('Sound effects initialized successfully');
+    } catch (error) {
+        console.error('Error initializing sound effects:', error);
     }
 }
 
 // Function to play a sound effect
 function playSoundEffect(name) {
-    if (!sfxEnabled || !soundEffects[name]) return;
-    
-    // Clone the audio to allow overlapping sounds
-    const sound = soundEffects[name].cloneNode();
-    sound.volume = soundEffects[name].volume;
-    sound.play().catch(e => console.log(`Failed to play ${name} sound:`, e));
-    
-    // Clean up clone after it finishes playing
-    sound.onended = () => {
-        sound.onended = null;
-    };
+    try {
+        // Make sure sounds are initialized
+        if (!soundsInitialized) {
+            if (debugAudio) console.log(`Initializing sounds before playing ${name}`);
+            initSoundEffects();
+        }
+        
+        // Check if sound effects are enabled
+        if (!sfxEnabled) {
+            if (debugAudio) console.log(`Sound ${name} not played: sound effects disabled`);
+            return;
+        }
+        
+        // Check if the sound exists
+        if (!soundEffects[name]) {
+            console.error(`Sound effect '${name}' not found`);
+            return;
+        }
+        
+        if (debugAudio) console.log(`Playing sound: ${name}`);
+        
+        // Clone the audio to allow overlapping sounds
+        const sound = soundEffects[name].cloneNode();
+        sound.volume = soundEffects[name].volume;
+        
+        // Play with error handling
+        sound.play()
+            .then(() => {
+                if (debugAudio) console.log(`Sound ${name} started playing`);
+            })
+            .catch(error => {
+                console.error(`Failed to play ${name} sound:`, error);
+                
+                // Try alternative method for Safari
+                if (error.name === 'NotAllowedError') {
+                    if (debugAudio) console.log(`Attempting alternative play method for ${name}`);
+                    // Try direct play on original audio element for user interaction requirement
+                    soundEffects[name].play().catch(e => 
+                        console.error(`Alternative method failed for ${name}:`, e)
+                    );
+                }
+            });
+        
+        // Clean up clone after it finishes playing
+        sound.onended = () => {
+            if (debugAudio) console.log(`Sound ${name} finished playing`);
+            sound.onended = null;
+        };
+    } catch (error) {
+        console.error(`Exception in playSoundEffect for ${name}:`, error);
+    }
 }
 
 // Toggle audio on/off
