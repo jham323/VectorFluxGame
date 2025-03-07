@@ -614,16 +614,22 @@ function drawTargetingSight() {
 
 // Function to handle shooting through the targeting sight
 function shoot() {
-    console.log("Shooting!"); // Debug log
+    console.log("%c SHOOT FUNCTION CALLED ", "background: #ff0000; color: #ffffff; font-size: 16px;");
     
-    // Add debug logging for sound effects
-    console.log("Sound effects state:", {
-        initialized: soundsInitialized,
-        enabled: sfxEnabled,
-        laserSound: soundEffects.laser ? "loaded" : "not loaded"
+    // Add detailed debug logging for sound effects
+    console.log("%c SOUND SYSTEM STATE ", "background: #0000ff; color: #ffffff; font-size: 14px;", {
+        soundsInitialized,
+        sfxEnabled,
+        laserSoundExists: soundEffects.hasOwnProperty('laser'),
+        laserSoundState: soundEffects.laser ? {
+            src: soundEffects.laser.src,
+            readyState: soundEffects.laser.readyState,
+            paused: soundEffects.laser.paused
+        } : "not loaded"
     });
     
-    // Play laser sound effect
+    // Play laser sound effect with more logging
+    console.log("%c Attempting to play laser sound ", "background: #00ff00; color: #000000;");
     playSoundEffect('laser');
     
     // Make sure player has a sight position
@@ -3100,6 +3106,21 @@ function initAudio() {
 
 // Initialize sound effects with proper path handling
 function initSoundEffects() {
+    console.log("%c INITIALIZING SOUND EFFECTS ", "background: #ffff00; color: #000000; font-size: 16px;");
+    
+    const soundFiles = {
+        'laser': 'audio/sfx/laser.mp3',
+        'enemy_hit': 'audio/sfx/enemy_hit.mp3',
+        'enemy_explosion': 'audio/sfx/enemy_explosion.mp3',
+        'player_hit': 'audio/sfx/player_hit.mp3',
+        'player_explosion': 'audio/sfx/player_explosion.mp3',
+        'button': 'audio/sfx/button.mp3',
+        'shield_down': 'audio/sfx/shield_down.mp3',
+        'torpedo': 'audio/sfx/torpedo.mp3'
+    };
+
+    console.log("%c Loading sound files ", "background: #00ff00; color: #000000;", soundFiles);
+    
     if (soundsInitialized) {
         console.log('Sound effects already initialized');
         return;
@@ -3156,6 +3177,24 @@ function initSoundEffects() {
 
 // Function to play a sound effect
 function playSoundEffect(name) {
+    console.log("%c PLAY SOUND EFFECT CALLED ", "background: #ff00ff; color: #ffffff; font-size: 16px;", {
+        soundName: name,
+        exists: soundEffects.hasOwnProperty(name),
+        soundState: soundEffects[name] ? {
+            src: soundEffects[name].src,
+            readyState: soundEffects[name].readyState,
+            paused: soundEffects[name].paused
+        } : "not found"
+    });
+    
+    if (!sfxEnabled || !soundEffects[name]) {
+        console.log("%c Sound effect blocked ", "background: #ff0000; color: #ffffff;", {
+            reason: !sfxEnabled ? "sfx disabled" : "sound not found",
+            name: name
+        });
+        return;
+    }
+    
     console.log(`Attempting to play sound: ${name}`);
     console.log(`Sound effect state:`, soundEffects[name]);
     
