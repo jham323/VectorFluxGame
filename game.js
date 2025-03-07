@@ -616,55 +616,14 @@ function drawTargetingSight() {
 
 // Function to handle shooting through the targeting sight
 function shoot() {
-    console.log('=== SHOOT FUNCTION CALLED ===');
-    
-    // Debug sound system state
-    console.log('Sound system state:', {
+    debugLog('SHOOT', 'Shoot function called');
+    debugLog('SOUND', 'Sound system state', {
         initialized: soundsInitialized,
         enabled: sfxEnabled,
-        availableSounds: Object.keys(soundEffects)
+        soundEffects: Object.keys(soundEffects)
     });
-
-    if (!soundsInitialized || !sfxEnabled) {
-        console.warn('Sound system not ready:', {
-            initialized: soundsInitialized,
-            enabled: sfxEnabled
-        });
-    }
-
-    // Try to play the laser sound
-    if (soundEffects.laser) {
-        console.log('Attempting to play laser sound');
-        playSoundEffect('laser');
-    } else {
-        console.error('Laser sound not available');
-    }
     
-    try {
-        console.log('Shoot function called');
-        
-        // Check sound system state
-        if (!soundsInitialized) {
-            console.error('Sound system not initialized!');
-        }
-        
-        if (!sfxEnabled) {
-            console.warn('Sound effects are disabled');
-        }
-        
-        if (!soundEffects || !soundEffects.laser) {
-            console.error('Laser sound not loaded:', {
-                soundEffects: soundEffects ? 'exists' : 'undefined',
-                laser: soundEffects?.laser ? 'exists' : 'missing'
-            });
-        } else {
-            console.log('Laser sound state:', {
-                src: soundEffects.laser.src,
-                readyState: soundEffects.laser.readyState
-            });
-        }
-        
-        // Try to play the sound
+    // Play laser sound effect
         playSoundEffect('laser');
         
         // Make sure player has a sight position
@@ -703,9 +662,6 @@ function shoot() {
             maxLife: 0.1,
             type: 'flash'
         });
-    } catch (error) {
-        console.error('Error in shoot function:', error);
-    }
 }
 
 // Update projectiles to move through the targeting sight
@@ -3144,11 +3100,11 @@ function initAudio() {
 
 // Initialize sound effects with proper path handling
 function initSoundEffects() {
-    console.log('=== SOUND SYSTEM INITIALIZATION ===');
-    console.log('Current baseUrl:', baseUrl);
+    debugLog('SOUND', 'Initializing sound effects');
+    debugLog('SOUND', 'Current baseUrl', { baseUrl });
     
     if (soundsInitialized) {
-        console.log('Sound effects already initialized');
+        debugLog('SOUND', 'Sound effects already initialized');
         return;
     }
 
@@ -3163,33 +3119,38 @@ function initSoundEffects() {
         'torpedo': 'audio/sfx/torpedo.mp3'
     };
 
-    console.log('Initializing sound effects with paths:', soundPaths);
+    debugLog('SOUND', 'Loading sound files', soundPaths);
 
     try {
         // Initialize each sound effect
         Object.entries(soundPaths).forEach(([name, path]) => {
             const fullPath = baseUrl + path;
-            console.log(`Loading sound: ${name} from ${fullPath}`);
+            debugLog('SOUND', `Loading sound: ${name}`, { path: fullPath });
             
             soundEffects[name] = new Audio();
             soundEffects[name].src = fullPath;
             
             // Add load event listener
             soundEffects[name].addEventListener('canplaythrough', () => {
-                console.log(`Sound ${name} loaded successfully`);
+                debugLog('SOUND', `Sound loaded successfully: ${name}`);
             });
             
             // Add error listener
             soundEffects[name].addEventListener('error', (e) => {
-                console.error(`Error loading sound ${name} from ${fullPath}:`, e);
+                debugLog('SOUND', `Error loading sound: ${name}`, { 
+                    error: e,
+                    path: fullPath 
+                });
             });
         });
 
         soundsInitialized = true;
         sfxEnabled = true;
-        console.log('Sound initialization complete. Available sounds:', Object.keys(soundEffects));
+        debugLog('SOUND', 'Sound initialization complete', {
+            availableSounds: Object.keys(soundEffects)
+        });
     } catch (error) {
-        console.error('Error during sound initialization:', error);
+        debugLog('SOUND', 'Error during sound initialization', { error });
         soundsInitialized = false;
         sfxEnabled = false;
     }
@@ -3197,39 +3158,25 @@ function initSoundEffects() {
 
 // Function to play a sound effect
 function playSoundEffect(name) {
+    debugLog('SOUND', `Attempting to play sound: ${name}`);
+    
+    if (!sfxEnabled) {
+        debugLog('SOUND', 'Sound effects disabled');
+        return;
+    }
+    
+    if (!soundEffects[name]) {
+        debugLog('SOUND', `Sound not found: ${name}`);
+        return;
+    }
+    
     try {
-        console.log('playSoundEffect called with:', name);
-        
-        if (!soundEffects) {
-            console.error('soundEffects object is undefined');
-            return;
-        }
-        
-        if (!soundEffects[name]) {
-            console.error(`Sound effect "${name}" not found in soundEffects`);
-            return;
-        }
-        
-        if (!sfxEnabled) {
-            console.warn('Sound effects are disabled, not playing:', name);
-            return;
-        }
-        
         const sound = soundEffects[name].cloneNode();
-        console.log(`Attempting to play ${name} sound`);
-        
         sound.play()
-            .then(() => console.log(`${name} sound started playing`))
-            .catch(error => {
-                console.error(`Error playing ${name} sound:`, error);
-                console.log('Sound state:', {
-                    readyState: sound.readyState,
-                    paused: sound.paused,
-                    src: sound.src
-                });
-            });
+            .then(() => debugLog('SOUND', `Sound started playing: ${name}`))
+            .catch(error => debugLog('SOUND', `Error playing sound: ${name}`, { error }));
     } catch (error) {
-        console.error('Error in playSoundEffect:', error);
+        debugLog('SOUND', `Exception playing sound: ${name}`, { error });
     }
 }
 
@@ -4262,5 +4209,23 @@ function playGameOverMusic() {
                 .then(() => console.log('Game over music started'))
                 .catch(e => console.error('Failed to start game over music:', e));
         }
+    }
+}
+
+// Debug configuration
+const DEBUG = true;
+const DEBUG_SOUND = true;
+
+// Debug logging function
+function debugLog(category, message, data = null) {
+    if (!DEBUG) return;
+    
+    const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+    const prefix = `[${timestamp}] [${category}]`;
+    
+    if (data) {
+        console.log(prefix, message, data);
+    } else {
+        console.log(prefix, message);
     }
 }
