@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector Flux Audio Test (Absolute URLs)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .log {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vector Flux Audio Test (Absolute URLs)</h1>
+    <p>This page tests audio with absolute URLs from the GitHub Pages site.</p>
+    
+    <div>
+        <button id="testButtonSound">Test Button Sound</button>
+        <button id="testLaserSound">Test Laser Sound</button>
+        <button id="testAllSounds">Test All Sounds</button>
+    </div>
+    
+    <h2>Debug Log</h2>
+    <div class="log" id="log"></div>
+    
+    <audio id="audioElement" preload="auto"></audio>
+    
+    <script>
+        // Debug logger
+        const logElement = document.getElementById('log');
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logElement.innerHTML += `[${time}] ${message}<br>`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+        
+        // Base URL for GitHub Pages
+        const baseUrl = 'https://jham323.github.io/VectorFluxGame/';
+        
+        // Sound files to test with absolute URLs
+        const soundFiles = {
+            button: `${baseUrl}audio/sfx/button.mp3`,
+            laser: `${baseUrl}audio/sfx/laser.mp3`,
+            enemyHit: `${baseUrl}audio/sfx/enemy_hit.mp3`,
+            enemyExplosion: `${baseUrl}audio/sfx/enemy_explosion.mp3`,
+            playerHit: `${baseUrl}audio/sfx/player_hit.mp3`,
+            shieldDown: `${baseUrl}audio/sfx/shield_down.mp3`,
+            playerExplosion: `${baseUrl}audio/sfx/player_explosion.mp3`,
+            torpedo: `${baseUrl}audio/sfx/torpedo.mp3`
+        };
+        
+        // Single audio element approach
+        const audioElement = document.getElementById('audioElement');
+        
+        function playSound(name) {
+            try {
+                log(`Attempting to play sound: ${name} from ${soundFiles[name]}`);
+                
+                // Set up source
+                audioElement.src = soundFiles[name];
+                
+                // Set up event listeners
+                audioElement.oncanplaythrough = () => {
+                    log(`✅ Sound ${name} loaded successfully and can be played`);
+                    audioElement.play()
+                        .then(() => log(`Sound ${name} playing from ${soundFiles[name]}`))
+                        .catch(error => log(`❌ Error playing sound ${name}: ${error}`));
+                };
+                
+                audioElement.onerror = (e) => {
+                    log(`❌ Error loading sound ${name}: ${e.target.error ? e.target.error.message : 'Unknown error'} (Code: ${audioElement.error ? audioElement.error.code : 'N/A'})`);
+                };
+                
+                // Force load
+                audioElement.load();
+            } catch (error) {
+                log(`❌ Exception playing sound ${name}: ${error}`);
+            }
+        }
+        
+        // Test button sound
+        document.getElementById('testButtonSound').addEventListener('click', () => {
+            playSound('button');
+        });
+        
+        // Test laser sound
+        document.getElementById('testLaserSound').addEventListener('click', () => {
+            playSound('laser');
+        });
+        
+        // Test all sounds
+        document.getElementById('testAllSounds').addEventListener('click', () => {
+            log('Testing all sounds in sequence...');
+            
+            let delay = 0;
+            const increment = 2000; // 2 seconds between sounds
+            
+            for (const name in soundFiles) {
+                setTimeout(() => {
+                    log(`Playing ${name} sound...`);
+                    playSound(name);
+                }, delay);
+                delay += increment;
+            }
+        });
+        
+        // Initial log
+        document.addEventListener('DOMContentLoaded', () => {
+            log(`Audio test page loaded (absolute URLs)`);
+            log(`Testing with base URL: ${baseUrl}`);
+            log(`Click any of the buttons to test sounds from the GitHub Pages site`);
+        });
+    </script>
+</body>
+</html> 
