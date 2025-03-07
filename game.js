@@ -3064,7 +3064,7 @@ let currentTrack = 'gameplay'; // Track which music is currently playing: 'gamep
 function initAudio() {
     // Set initial track to gameplay music with proper path
     const musicPath = baseUrl + 'audio/Dreams.mp3';
-    console.log('Setting music path:', musicPath);
+    console.log('Setting initial music path:', musicPath);
     gameMusic.src = musicPath;
     
     // Add error handler for audio loading
@@ -3095,7 +3095,7 @@ function initAudio() {
                     if (musicEnabled) {
                         gameMusic.play()
                             .then(() => console.log('Music started after user interaction'))
-                            .catch(e => console.log('Audio still failed:', e));
+                            .catch(e => console.error('Audio still failed:', e));
                     }
                     document.removeEventListener('click', startAudioOnInteraction);
                 };
@@ -3110,19 +3110,20 @@ function initSoundEffects() {
     debugLog('SOUND', 'Initializing sound effects');
     debugLog('SOUND', `Current baseUrl: ${baseUrl}`);
 
-    soundEffectsEnabled = true;
-    soundEffects = {};
-
     const soundPaths = {
-        laser: 'sounds/laser.mp3',
-        explosion: 'sounds/explosion.mp3',
-        powerup: 'sounds/powerup.mp3',
-        button: 'sounds/button.mp3'
+        laser: baseUrl + 'audio/sfx/laser.mp3',
+        torpedo: baseUrl + 'audio/sfx/torpedo.mp3',
+        enemyHit: baseUrl + 'audio/sfx/enemy_hit.mp3',
+        enemyExplosion: baseUrl + 'audio/sfx/enemy_explosion.mp3',
+        playerHit: baseUrl + 'audio/sfx/player_hit.mp3',
+        shieldDown: baseUrl + 'audio/sfx/shield_down.mp3',
+        playerExplosion: baseUrl + 'audio/sfx/player_explosion.mp3',
+        button: baseUrl + 'audio/sfx/button.mp3'
     };
 
     Object.entries(soundPaths).forEach(([name, path]) => {
         debugLog('SOUND', `Loading sound: ${name} from ${path}`);
-        const audio = new Audio(baseUrl + path);
+        const audio = new Audio(path);
         
         audio.addEventListener('canplaythrough', () => {
             debugLog('SOUND', `Sound loaded successfully: ${name}`);
@@ -3130,17 +3131,25 @@ function initSoundEffects() {
         
         audio.addEventListener('error', (e) => {
             debugLog('SOUND', `Error loading sound: ${name}`, e);
+            console.error(`Failed to load sound ${name} from ${path}:`, e);
         });
         
         soundEffects[name] = audio;
     });
+
+    soundsInitialized = true;
 }
 
-// Function to play a sound effect
+// Function to play a sound effect with error handling
 function playSoundEffect(name) {
+    if (!soundsInitialized) {
+        debugLog('SOUND', 'Sound effects not initialized yet');
+        return;
+    }
+
     debugLog('SOUND', `Attempting to play sound: ${name}`);
     
-    if (!soundEffectsEnabled) {
+    if (!sfxEnabled) {
         debugLog('SOUND', 'Sound effects are disabled');
         return;
     }
@@ -3151,12 +3160,16 @@ function playSoundEffect(name) {
     }
 
     try {
+        // Clone the audio to allow multiple simultaneous plays
         const sound = soundEffects[name].cloneNode();
+        sound.volume = 0.5; // Set a reasonable volume
         sound.play().catch(error => {
             debugLog('SOUND', `Error playing sound: ${name}`, error);
+            console.error(`Error playing sound ${name}:`, error);
         });
     } catch (error) {
         debugLog('SOUND', `Error cloning sound: ${name}`, error);
+        console.error(`Error with sound ${name}:`, error);
     }
 }
 
