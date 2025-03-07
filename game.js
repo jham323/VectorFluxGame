@@ -1,3 +1,11 @@
+// Debug configuration - MUST BE AT START OF FILE
+window.DEBUG = true;
+window.DEBUG_SOUND = true;
+window.debugLog = function(category, message, data = null) {
+    if (!window.DEBUG) return;
+    console.log(`[${category}]`, message, data || '');
+}
+
 // Add vaporwave color palette at the top of the file
 const vaporwaveColors = {
     primary: '#FF00FF', // Magenta
@@ -617,51 +625,50 @@ function drawTargetingSight() {
 // Function to handle shooting through the targeting sight
 function shoot() {
     debugLog('SHOOT', 'Shoot function called');
-    debugLog('SOUND', 'Sound system state', {
-        initialized: soundsInitialized,
-        enabled: sfxEnabled,
-        soundEffects: Object.keys(soundEffects)
+    debugLog('SHOOT', `Sound system state: initialized=${soundsInitialized}, enabled=${soundEffectsEnabled}`);
+    
+    if (soundEffectsEnabled && soundEffects.laser) {
+        playSoundEffect('laser');
+    } else {
+        debugLog('SHOOT', 'Cannot play laser sound - sound system not ready');
+    }
+    
+    // Make sure player has a sight position
+    if (!player.sightX || !player.sightY) {
+        player.sightX = player.x;
+        player.sightY = player.y - 150;
+    }
+    
+    // Add projectile that will pass through the targeting sight
+    projectiles.push({
+        x: player.x,
+        y: player.y - player.height/3,
+        z: 0,
+        initialX: player.x, // Store initial position
+        initialY: player.y - player.height/3,
+        // Store the sight position as the target
+        targetX: player.sightX,
+        targetY: player.sightY,
+        // Calculate velocity based on the distance to the sight
+        speed: 1200,
+        width: 5,
+        height: 15,
+        isEnemy: false,
+        // ADDED: Flag to identify targeting sight projectiles
+        isTargeting: true
     });
     
-    // Play laser sound effect
-        playSoundEffect('laser');
-        
-        // Make sure player has a sight position
-        if (!player.sightX || !player.sightY) {
-            player.sightX = player.x;
-            player.sightY = player.y - 150;
-        }
-        
-        // Add projectile that will pass through the targeting sight
-        projectiles.push({
-            x: player.x,
-            y: player.y - player.height/3,
-            z: 0,
-            initialX: player.x, // Store initial position
-            initialY: player.y - player.height/3,
-            // Store the sight position as the target
-            targetX: player.sightX,
-            targetY: player.sightY,
-            // Calculate velocity based on the distance to the sight
-            speed: 1200,
-            width: 5,
-            height: 15,
-            isEnemy: false,
-            // ADDED: Flag to identify targeting sight projectiles
-            isTargeting: true
-        });
-        
-        // Add muzzle flash
-        particles.push({
-            x: player.x,
-            y: player.y - player.height/3,
-            z: 0,
-            size: 20,
-            color: '#00FFFF',
-            life: 0.1,
-            maxLife: 0.1,
-            type: 'flash'
-        });
+    // Add muzzle flash
+    particles.push({
+        x: player.x,
+        y: player.y - player.height/3,
+        z: 0,
+        size: 20,
+        color: '#00FFFF',
+        life: 0.1,
+        maxLife: 0.1,
+        type: 'flash'
+    });
 }
 
 // Update projectiles to move through the targeting sight
@@ -3101,67 +3108,40 @@ function initAudio() {
 // Initialize sound effects with proper path handling
 function initSoundEffects() {
     debugLog('SOUND', 'Initializing sound effects');
-    debugLog('SOUND', 'Current baseUrl', { baseUrl });
-    
-    if (soundsInitialized) {
-        debugLog('SOUND', 'Sound effects already initialized');
-        return;
-    }
+    debugLog('SOUND', `Current baseUrl: ${baseUrl}`);
+
+    soundEffectsEnabled = true;
+    soundEffects = {};
 
     const soundPaths = {
-        'laser': 'audio/sfx/laser.mp3',
-        'enemy_hit': 'audio/sfx/enemy_hit.mp3',
-        'enemy_explosion': 'audio/sfx/enemy_explosion.mp3',
-        'player_hit': 'audio/sfx/player_hit.mp3',
-        'player_explosion': 'audio/sfx/player_explosion.mp3',
-        'button': 'audio/sfx/button.mp3',
-        'shield_down': 'audio/sfx/shield_down.mp3',
-        'torpedo': 'audio/sfx/torpedo.mp3'
+        laser: 'sounds/laser.mp3',
+        explosion: 'sounds/explosion.mp3',
+        powerup: 'sounds/powerup.mp3',
+        button: 'sounds/button.mp3'
     };
 
-    debugLog('SOUND', 'Loading sound files', soundPaths);
-
-    try {
-        // Initialize each sound effect
-        Object.entries(soundPaths).forEach(([name, path]) => {
-            const fullPath = baseUrl + path;
-            debugLog('SOUND', `Loading sound: ${name}`, { path: fullPath });
-            
-            soundEffects[name] = new Audio();
-            soundEffects[name].src = fullPath;
-            
-            // Add load event listener
-            soundEffects[name].addEventListener('canplaythrough', () => {
-                debugLog('SOUND', `Sound loaded successfully: ${name}`);
-            });
-            
-            // Add error listener
-            soundEffects[name].addEventListener('error', (e) => {
-                debugLog('SOUND', `Error loading sound: ${name}`, { 
-                    error: e,
-                    path: fullPath 
-                });
-            });
+    Object.entries(soundPaths).forEach(([name, path]) => {
+        debugLog('SOUND', `Loading sound: ${name} from ${path}`);
+        const audio = new Audio(baseUrl + path);
+        
+        audio.addEventListener('canplaythrough', () => {
+            debugLog('SOUND', `Sound loaded successfully: ${name}`);
         });
-
-        soundsInitialized = true;
-        sfxEnabled = true;
-        debugLog('SOUND', 'Sound initialization complete', {
-            availableSounds: Object.keys(soundEffects)
+        
+        audio.addEventListener('error', (e) => {
+            debugLog('SOUND', `Error loading sound: ${name}`, e);
         });
-    } catch (error) {
-        debugLog('SOUND', 'Error during sound initialization', { error });
-        soundsInitialized = false;
-        sfxEnabled = false;
-    }
+        
+        soundEffects[name] = audio;
+    });
 }
 
 // Function to play a sound effect
 function playSoundEffect(name) {
     debugLog('SOUND', `Attempting to play sound: ${name}`);
     
-    if (!sfxEnabled) {
-        debugLog('SOUND', 'Sound effects disabled');
+    if (!soundEffectsEnabled) {
+        debugLog('SOUND', 'Sound effects are disabled');
         return;
     }
     
@@ -3169,14 +3149,14 @@ function playSoundEffect(name) {
         debugLog('SOUND', `Sound not found: ${name}`);
         return;
     }
-    
+
     try {
         const sound = soundEffects[name].cloneNode();
-        sound.play()
-            .then(() => debugLog('SOUND', `Sound started playing: ${name}`))
-            .catch(error => debugLog('SOUND', `Error playing sound: ${name}`, { error }));
+        sound.play().catch(error => {
+            debugLog('SOUND', `Error playing sound: ${name}`, error);
+        });
     } catch (error) {
-        debugLog('SOUND', `Exception playing sound: ${name}`, { error });
+        debugLog('SOUND', `Error cloning sound: ${name}`, error);
     }
 }
 
@@ -4209,23 +4189,5 @@ function playGameOverMusic() {
                 .then(() => console.log('Game over music started'))
                 .catch(e => console.error('Failed to start game over music:', e));
         }
-    }
-}
-
-// Debug configuration
-const DEBUG = true;
-const DEBUG_SOUND = true;
-
-// Debug logging function
-function debugLog(category, message, data = null) {
-    if (!DEBUG) return;
-    
-    const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
-    const prefix = `[${timestamp}] [${category}]`;
-    
-    if (data) {
-        console.log(prefix, message, data);
-    } else {
-        console.log(prefix, message);
     }
 }
