@@ -20,9 +20,9 @@ const toggleAudioButton = document.getElementById('toggleAudio');
 const audioIcon = document.getElementById('audioIcon');
 
 // Get base URL for assets (resolves GitHub Pages path issues)
-const baseUrl = window.location.href.includes('github.io') 
-    ? 'https://jham323.github.io/VectorFluxGame/' 
-    : '';
+const baseUrl = window.location.hostname.includes('github.io') 
+    ? '/VectorFluxGame/' 
+    : './';
 
 // Sound effects
 const soundEffects = {
@@ -1796,24 +1796,7 @@ function showGameOver() {
     // We don't stop the music on game over, but switch to game over music
     if (musicEnabled) {
         // Switch to game over music
-        if (currentTrack !== 'gameover') {
-            gameMusic.pause(); // Pause current music first
-            gameMusic.src = 'audio/Cosmos.mp3'; // Set new source
-            currentTrack = 'gameover';
-            console.log("Switched to game over music (Cosmos.mp3)");
-        }
-        
-        console.log("Playing game over music");
-        try {
-            const playPromise = gameMusic.play();
-            if (playPromise !== undefined) {
-                playPromise
-                    .then(() => console.log("Game over music playing"))
-                    .catch(e => console.error("Failed to play game over music:", e));
-            }
-        } catch (e) {
-            console.error("Exception when trying to play game over music:", e);
-        }
+        playGameOverMusic();
     }
     
     // Stop enemy spawning
@@ -3066,7 +3049,14 @@ let currentTrack = 'gameplay'; // Track which music is currently playing: 'gamep
 // Initialize audio
 function initAudio() {
     // Set initial track to gameplay music
-    gameMusic.src = 'audio/Dreams.mp3';
+    const musicPath = baseUrl + 'audio/Dreams.mp3';
+    gameMusic.src = musicPath;
+    console.log("Setting initial music path:", musicPath);
+    
+    // Add error handler for audio loading
+    gameMusic.onerror = (e) => {
+        console.error("Error loading music from", musicPath, ":", e);
+    };
     
     // Set initial volume
     gameMusic.volume = 0.5;
@@ -3146,18 +3136,25 @@ function initSoundEffects() {
             
             if (debugAudio) console.log(`Loading sound: ${name} from ${fullPath}`);
             
-            soundEffects[name] = new Audio(fullPath);
+            // Create new Audio element
+            soundEffects[name] = new Audio();
             
-            // Add error handling to each Audio element
+            // Add error handling before setting source
             soundEffects[name].onerror = (e) => {
                 console.error(`Error loading sound ${name} from ${fullPath}:`, e);
             };
+            
+            // Set source after adding error handler
+            soundEffects[name].src = fullPath;
             
             // Set default volume
             soundEffects[name].volume = 0.4;
             
             // Preload audio
-            soundEffects[name].load();
+            const loadPromise = soundEffects[name].load();
+            if (loadPromise !== undefined) {
+                loadPromise.catch(e => console.error(`Failed to preload ${name}:`, e));
+            }
         }
         
         // Apply specific volume adjustments
@@ -4243,5 +4240,22 @@ function handleGameOver(finalScore) {
     } else {
         console.error("gameLeaderboard object not found or showNameInput is not a function");
         console.log("window.gameLeaderboard:", window.gameLeaderboard);
+    }
+}
+
+// Switch to game over music
+function playGameOverMusic() {
+    if (currentTrack !== 'gameover') {
+        gameMusic.pause();
+        const musicPath = baseUrl + 'audio/Cosmos.mp3';
+        gameMusic.src = musicPath;
+        currentTrack = 'gameover';
+        console.log("Switched to game over music:", musicPath);
+        
+        if (musicEnabled) {
+            gameMusic.play()
+                .then(() => console.log("Game over music started"))
+                .catch(e => console.error("Failed to start game over music:", e));
+        }
     }
 }
