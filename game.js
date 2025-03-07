@@ -3060,7 +3060,7 @@ function drawGameTitle() {
 // Initialize audio
 function initAudio() {
     // Set initial track to gameplay music with proper path
-    const musicPath = baseUrl + 'audio/Dreams.mp3';
+    const musicPath = 'audio/Dreams.mp3';
     console.log('Setting initial music path:', musicPath);
     gameMusic.src = musicPath;
     
@@ -3105,63 +3105,23 @@ function initAudio() {
 // Initialize sound effects with proper path handling
 function initSoundEffects() {
     console.log('=== INITIALIZING SOUND EFFECTS ===');
-    console.log('Current URL:', window.location.href);
-    console.log('Hostname:', window.location.hostname);
-    console.log('Base URL:', baseUrl);
-
-    // Try multiple path options for sound files
-    const pathOptions = [
-        // GitHub Pages absolute URL
-        'https://jham323.github.io/VectorFluxGame/audio/sfx/',
-        // GitHub Pages relative URL
-        '/VectorFluxGame/audio/sfx/',
-        // Local development
-        '/audio/sfx/',
-        // Relative path
-        'audio/sfx/',
-        // Current path + relative
-        window.location.pathname + 'audio/sfx/'
-    ];
-
-    console.log('Trying multiple path options:', pathOptions);
-
-    const soundFiles = [
-        'laser.mp3',
-        'torpedo.mp3',
-        'enemy_hit.mp3',
-        'enemy_explosion.mp3',
-        'player_hit.mp3',
-        'shield_down.mp3',
-        'player_explosion.mp3',
-        'button.mp3'
-    ];
-
-    // Try each path option
-    pathOptions.forEach(basePath => {
-        console.log(`Testing path: ${basePath}`);
-        
-        // Check the first sound file as a test
-        checkAudioFile(basePath + 'laser.mp3')
-            .then(exists => {
-                if (exists) {
-                    console.log(`✅ Found working path: ${basePath}`);
-                    // Load all sound files from this path
-                    loadSoundFiles(basePath, soundFiles);
-                }
-            });
-    });
-
-    soundsInitialized = true;
-}
-
-// Load sound files from a specific path
-function loadSoundFiles(basePath, soundFiles) {
-    console.log(`Loading all sound files from: ${basePath}`);
     
-    soundFiles.forEach(file => {
-        const name = file.split('.')[0]; // Remove extension
-        const path = basePath + file;
-        
+    // Use simple relative paths - confirmed working by our test page
+    const soundPaths = {
+        laser: 'audio/sfx/laser.mp3',
+        torpedo: 'audio/sfx/torpedo.mp3',
+        enemyHit: 'audio/sfx/enemy_hit.mp3',
+        enemyExplosion: 'audio/sfx/enemy_explosion.mp3',
+        playerHit: 'audio/sfx/player_hit.mp3',
+        shieldDown: 'audio/sfx/shield_down.mp3',
+        playerExplosion: 'audio/sfx/player_explosion.mp3',
+        button: 'audio/sfx/button.mp3'
+    };
+
+    console.log('Sound effect paths:', soundPaths);
+
+    // Load all sound files
+    Object.entries(soundPaths).forEach(([name, path]) => {
         console.log(`Loading sound: ${name} from ${path}`);
         const audio = new Audio(path);
         
@@ -3175,28 +3135,20 @@ function loadSoundFiles(basePath, soundFiles) {
         
         soundEffects[name] = audio;
     });
-    
-    // Test play a sound to verify
-    setTimeout(() => {
-        console.log('Testing sound playback...');
-        if (soundEffects.button) {
-            console.log('Attempting to play button sound...');
-            playSoundEffect('button');
-        }
-    }, 2000);
+
+    soundsInitialized = true;
+    console.log('Sound effects initialization complete', Object.keys(soundEffects));
 }
 
 // Function to play a sound effect with error handling
 function playSoundEffect(name) {
     console.log(`Attempting to play sound: ${name}`);
-    console.log('Sound system state:', {
-        initialized: soundsInitialized,
-        enabled: sfxEnabled,
-        soundExists: !!soundEffects[name]
-    });
-
+    
     if (!soundsInitialized) {
-        console.warn('Sound effects not initialized yet');
+        console.warn('Sound effects not initialized yet. Initializing now...');
+        initSoundEffects();
+        // Try again after a short delay to allow initialization
+        setTimeout(() => playSoundEffect(name), 100);
         return;
     }
 
@@ -3207,8 +3159,6 @@ function playSoundEffect(name) {
     
     if (!soundEffects[name]) {
         console.error(`Sound not found: ${name}`);
-        // Try to initialize on demand
-        initSoundEffects();
         return;
     }
 
@@ -3216,19 +3166,6 @@ function playSoundEffect(name) {
         // Clone the audio to allow multiple simultaneous plays
         const sound = soundEffects[name].cloneNode();
         sound.volume = 0.5; // Set a reasonable volume
-        
-        // Add event listeners to track playback
-        sound.addEventListener('play', () => {
-            console.log(`▶️ Started playing: ${name}`);
-        });
-        
-        sound.addEventListener('ended', () => {
-            console.log(`⏹️ Finished playing: ${name}`);
-        });
-        
-        sound.addEventListener('error', (e) => {
-            console.error(`❌ Error during playback: ${name}`, e);
-        });
         
         const playPromise = sound.play();
         if (playPromise !== undefined) {
@@ -4260,7 +4197,7 @@ function handleGameOver(finalScore) {
 function playGameOverMusic() {
     if (currentTrack !== 'gameover') {
         gameMusic.pause();
-        const musicPath = baseUrl + 'audio/Cosmos.mp3';
+        const musicPath = 'audio/Cosmos.mp3';
         console.log('Switching to game over music:', musicPath);
         gameMusic.src = musicPath;
         currentTrack = 'gameover';
