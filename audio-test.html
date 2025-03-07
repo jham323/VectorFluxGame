@@ -3,108 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vector Flux Audio Test</title>
+    <title>Audio File Test</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f0f0f0;
+            line-height: 1.6;
         }
-        button {
-            padding: 10px 20px;
+        .test-button {
+            padding: 10px 15px;
             margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
         }
-        .log {
-            background-color: #333;
-            color: #fff;
+        .test-button:hover {
+            background-color: #45a049;
+        }
+        #log {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
             padding: 10px;
-            border-radius: 5px;
-            height: 300px;
+            max-height: 300px;
             overflow-y: auto;
             margin-top: 20px;
-            font-family: monospace;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+        .audio-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 100px;
+            gap: 10px;
+            margin-bottom: 10px;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
+        .audio-grid > div {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
         }
     </style>
 </head>
 <body>
-    <h1>Vector Flux Audio Test</h1>
-    <p>This page will help diagnose audio issues with the Vector Flux game.</p>
+    <h1>Audio File Test</h1>
+    <p>This page tests if the sound files are accessible from GitHub Pages.</p>
     
     <div>
-        <button id="testButton">Test Button Sound</button>
-        <button id="testLaser">Test Laser Sound</button>
-        <button id="testExplosion">Test Explosion Sound</button>
-        <button id="testAllSounds">Test All Sounds</button>
-        <button id="checkFiles">Check File Existence</button>
+        <button id="checkFiles" class="test-button">Check All Files</button>
+        <button id="testAllSounds" class="test-button">Test All Sounds</button>
     </div>
     
-    <h2>Audio Files Status</h2>
-    <table id="filesTable">
-        <tr>
-            <th>Sound</th>
-            <th>Path</th>
-            <th>Status</th>
-        </tr>
-        <tr>
-            <td>Button</td>
-            <td>audio/sfx/button.mp3</td>
-            <td id="buttonStatus">Unchecked</td>
-        </tr>
-        <tr>
-            <td>Laser</td>
-            <td>audio/sfx/laser.mp3</td>
-            <td id="laserStatus">Unchecked</td>
-        </tr>
-        <tr>
-            <td>Enemy Hit</td>
-            <td>audio/sfx/enemy_hit.mp3</td>
-            <td id="enemyHitStatus">Unchecked</td>
-        </tr>
-        <tr>
-            <td>Enemy Explosion</td>
-            <td>audio/sfx/enemy_explosion.mp3</td>
-            <td id="enemyExplosionStatus">Unchecked</td>
-        </tr>
-        <tr>
-            <td>Player Hit</td>
-            <td>audio/sfx/player_hit.mp3</td>
-            <td id="playerHitStatus">Unchecked</td>
-        </tr>
-        <tr>
-            <td>Shield Down</td>
-            <td>audio/sfx/shield_down.mp3</td>
-            <td id="shieldDownStatus">Unchecked</td>
-        </tr>
-        <tr>
-            <td>Player Explosion</td>
-            <td>audio/sfx/player_explosion.mp3</td>
-            <td id="playerExplosionStatus">Unchecked</td>
-        </tr>
-        <tr>
-            <td>Torpedo</td>
-            <td>audio/sfx/torpedo.mp3</td>
-            <td id="torpedoStatus">Unchecked</td>
-        </tr>
-    </table>
+    <h2>Individual Sound Tests</h2>
+    <div class="audio-grid">
+        <div><strong>Sound Name</strong></div>
+        <div><strong>File Path</strong></div>
+        <div><strong>Status</strong></div>
+    </div>
     
-    <h2>Debug Log</h2>
-    <div class="log" id="log"></div>
+    <div class="audio-grid">
+        <div>Laser</div>
+        <div>audio/sfx/laser.mp3</div>
+        <div id="laserStatus">-</div>
+    </div>
+    
+    <div class="audio-grid">
+        <div>Torpedo</div>
+        <div>audio/sfx/torpedo.mp3</div>
+        <div id="torpedoStatus">-</div>
+    </div>
+    
+    <div class="audio-grid">
+        <div>Enemy Hit</div>
+        <div>audio/sfx/enemy_hit.mp3</div>
+        <div id="enemyHitStatus">-</div>
+    </div>
+    
+    <div class="audio-grid">
+        <div>Enemy Explosion</div>
+        <div>audio/sfx/enemy_explosion.mp3</div>
+        <div id="enemyExplosionStatus">-</div>
+    </div>
+    
+    <div class="audio-grid">
+        <div>Player Hit</div>
+        <div>audio/sfx/player_hit.mp3</div>
+        <div id="playerHitStatus">-</div>
+    </div>
+    
+    <div class="audio-grid">
+        <div>Shield Down</div>
+        <div>audio/sfx/shield_down.mp3</div>
+        <div id="shieldDownStatus">-</div>
+    </div>
+    
+    <div class="audio-grid">
+        <div>Player Explosion</div>
+        <div>audio/sfx/player_explosion.mp3</div>
+        <div id="playerExplosionStatus">-</div>
+    </div>
+    
+    <div class="audio-grid">
+        <div>Button</div>
+        <div>audio/sfx/button.mp3</div>
+        <div id="buttonStatus">-</div>
+    </div>
+    
+    <div class="audio-grid">
+        <div>Music (Dreams)</div>
+        <div>audio/Dreams.mp3</div>
+        <div id="dreamsStatus">-</div>
+    </div>
+    
+    <h2>Path Options Testing</h2>
+    <div id="pathTests"></div>
+    
+    <h2>Log</h2>
+    <div id="log"></div>
     
     <script>
         // Debug logger
@@ -118,15 +132,81 @@
         
         // Sound files to test
         const soundFiles = {
-            button: 'audio/sfx/button.mp3',
             laser: 'audio/sfx/laser.mp3',
+            torpedo: 'audio/sfx/torpedo.mp3',
             enemyHit: 'audio/sfx/enemy_hit.mp3',
             enemyExplosion: 'audio/sfx/enemy_explosion.mp3',
             playerHit: 'audio/sfx/player_hit.mp3',
             shieldDown: 'audio/sfx/shield_down.mp3',
             playerExplosion: 'audio/sfx/player_explosion.mp3',
-            torpedo: 'audio/sfx/torpedo.mp3'
+            button: 'audio/sfx/button.mp3',
+            dreams: 'audio/Dreams.mp3'
         };
+        
+        // Path options to test
+        const pathOptions = [
+            '', // Relative from current page
+            '/', // Root relative
+            '/VectorFluxGame/', // GitHub Pages relative
+            'https://jham323.github.io/VectorFluxGame/', // Absolute URL
+            window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) // Current directory
+        ];
+        
+        // Function to check if a file exists
+        function checkFileExists(url) {
+            return new Promise((resolve) => {
+                fetch(url, { method: 'HEAD' })
+                    .then(response => {
+                        resolve(response.ok);
+                    })
+                    .catch(() => {
+                        resolve(false);
+                    });
+            });
+        }
+        
+        // Function to test all path options for a specific file
+        async function testPathOptions(file) {
+            const pathTestsDiv = document.getElementById('pathTests');
+            const fileTestDiv = document.createElement('div');
+            fileTestDiv.innerHTML = `<h3>${file}</h3>`;
+            pathTestsDiv.appendChild(fileTestDiv);
+            
+            for (const basePath of pathOptions) {
+                const fullPath = basePath + soundFiles[file];
+                const exists = await checkFileExists(fullPath);
+                
+                const resultDiv = document.createElement('div');
+                resultDiv.innerHTML = `
+                    <div style="margin-bottom: 5px;">
+                        <span style="color: ${exists ? 'green' : 'red'}">
+                            ${exists ? '✓' : '✗'}
+                        </span>
+                        ${fullPath}
+                    </div>
+                `;
+                fileTestDiv.appendChild(resultDiv);
+                
+                if (exists) {
+                    document.getElementById(`${file}Status`).innerHTML = '✓';
+                    document.getElementById(`${file}Status`).style.color = 'green';
+                    log(`File exists: ${fullPath}`);
+                    break;
+                }
+            }
+        }
+        
+        // Function to test all files
+        async function testAllFiles() {
+            log('Testing all files...');
+            document.getElementById('pathTests').innerHTML = '';
+            
+            for (const file in soundFiles) {
+                await testPathOptions(file);
+            }
+            
+            log('File testing complete');
+        }
         
         // Function to play a sound
         function playSound(name) {
@@ -143,8 +223,6 @@
                 
                 sound.onerror = (e) => {
                     log(`❌ Error loading sound ${name}: ${e.target.error ? e.target.error : 'Unknown error'}`);
-                    document.getElementById(`${name}Status`).innerHTML = '❌ Error';
-                    document.getElementById(`${name}Status`).style.color = 'red';
                 };
                 
                 return sound;
@@ -154,61 +232,8 @@
             }
         }
         
-        // Function to check if a file exists
-        async function checkFileExists(url, statusElementId) {
-            try {
-                log(`Checking file: ${url}`);
-                const response = await fetch(url, { method: 'HEAD' });
-                
-                if (response.ok) {
-                    log(`✅ File exists: ${url}`);
-                    document.getElementById(statusElementId).innerHTML = '✅ Exists';
-                    document.getElementById(statusElementId).style.color = 'green';
-                    return true;
-                } else {
-                    log(`❌ File not found: ${url} (Status: ${response.status})`);
-                    document.getElementById(statusElementId).innerHTML = `❌ Not found (${response.status})`;
-                    document.getElementById(statusElementId).style.color = 'red';
-                    return false;
-                }
-            } catch (error) {
-                log(`❌ Error checking file ${url}: ${error}`);
-                document.getElementById(statusElementId).innerHTML = `❌ Error: ${error.message}`;
-                document.getElementById(statusElementId).style.color = 'red';
-                return false;
-            }
-        }
-        
-        // Check all files
-        document.getElementById('checkFiles').addEventListener('click', async () => {
-            log('Checking all sound files...');
-            
-            for (const [name, path] of Object.entries(soundFiles)) {
-                const statusId = `${name}Status`;
-                document.getElementById(statusId).innerHTML = 'Checking...';
-                await checkFileExists(path, statusId);
-            }
-            
-            log('File check complete');
-        });
-        
-        // Test button sound
-        document.getElementById('testButton').addEventListener('click', () => {
-            playSound('button');
-        });
-        
-        // Test laser sound
-        document.getElementById('testLaser').addEventListener('click', () => {
-            playSound('laser');
-        });
-        
-        // Test explosion sound
-        document.getElementById('testExplosion').addEventListener('click', () => {
-            playSound('enemyExplosion');
-        });
-        
-        // Test all sounds
-        document.getElementById('testAllSounds').addEventListener('click', () => {
+        // Test all sounds in sequence
+        function testAllSounds() {
             log('Testing all sounds in sequence...');
             
             let delay = 0;
@@ -221,36 +246,17 @@
                 }, delay);
                 delay += increment;
             }
-        });
-        
-        // Detect browser
-        function detectBrowser() {
-            const userAgent = navigator.userAgent;
-            let browserName;
-            
-            if (userAgent.match(/chrome|chromium|crios/i)) {
-                browserName = "Chrome";
-            } else if (userAgent.match(/firefox|fxios/i)) {
-                browserName = "Firefox";
-            } else if (userAgent.match(/safari/i)) {
-                browserName = "Safari";
-            } else if (userAgent.match(/opr\//i)) {
-                browserName = "Opera";
-            } else if (userAgent.match(/edg/i)) {
-                browserName = "Edge";
-            } else {
-                browserName = "Unknown";
-            }
-            
-            return browserName;
         }
         
-        // Initial log
+        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             log(`Audio test page loaded`);
-            log(`Browser: ${detectBrowser()}, User Agent: ${navigator.userAgent}`);
-            log(`Click 'Check File Existence' to verify sound files are accessible`);
-            log(`Click on any of the test buttons to play sounds`);
+            log(`URL: ${window.location.href}`);
+            log(`Pathname: ${window.location.pathname}`);
+            
+            // Add event listeners
+            document.getElementById('checkFiles').addEventListener('click', testAllFiles);
+            document.getElementById('testAllSounds').addEventListener('click', testAllSounds);
         });
     </script>
 </body>
