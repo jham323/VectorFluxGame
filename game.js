@@ -616,6 +616,30 @@ function drawTargetingSight() {
 
 // Function to handle shooting through the targeting sight
 function shoot() {
+    console.log('=== SHOOT FUNCTION CALLED ===');
+    
+    // Debug sound system state
+    console.log('Sound system state:', {
+        initialized: soundsInitialized,
+        enabled: sfxEnabled,
+        availableSounds: Object.keys(soundEffects)
+    });
+
+    if (!soundsInitialized || !sfxEnabled) {
+        console.warn('Sound system not ready:', {
+            initialized: soundsInitialized,
+            enabled: sfxEnabled
+        });
+    }
+
+    // Try to play the laser sound
+    if (soundEffects.laser) {
+        console.log('Attempting to play laser sound');
+        playSoundEffect('laser');
+    } else {
+        console.error('Laser sound not available');
+    }
+    
     try {
         console.log('Shoot function called');
         
@@ -3120,9 +3144,15 @@ function initAudio() {
 
 // Initialize sound effects with proper path handling
 function initSoundEffects() {
-    console.log("%c INITIALIZING SOUND EFFECTS ", "background: #ffff00; color: #000000; font-size: 16px;");
+    console.log('=== SOUND SYSTEM INITIALIZATION ===');
+    console.log('Current baseUrl:', baseUrl);
     
-    const soundFiles = {
+    if (soundsInitialized) {
+        console.log('Sound effects already initialized');
+        return;
+    }
+
+    const soundPaths = {
         'laser': 'audio/sfx/laser.mp3',
         'enemy_hit': 'audio/sfx/enemy_hit.mp3',
         'enemy_explosion': 'audio/sfx/enemy_explosion.mp3',
@@ -3133,59 +3163,35 @@ function initSoundEffects() {
         'torpedo': 'audio/sfx/torpedo.mp3'
     };
 
-    console.log("%c Loading sound files ", "background: #00ff00; color: #000000;", soundFiles);
-    
-    if (soundsInitialized) {
-        console.log('Sound effects already initialized');
-        return;
-    }
-    
-    console.log('Initializing sound effects with baseUrl:', baseUrl);
-    
+    console.log('Initializing sound effects with paths:', soundPaths);
+
     try {
-        const soundPaths = {
-            laser: 'audio/sfx/laser.mp3',
-            torpedo: 'audio/sfx/torpedo.mp3',
-            enemyHit: 'audio/sfx/enemy_hit.mp3',
-            enemyExplosion: 'audio/sfx/enemy_explosion.mp3',
-            playerHit: 'audio/sfx/player_hit.mp3',
-            shieldDown: 'audio/sfx/shield_down.mp3',
-            playerExplosion: 'audio/sfx/player_explosion.mp3',
-            button: 'audio/sfx/button.mp3'
-        };
-        
         // Initialize each sound effect
-        for (const [name, path] of Object.entries(soundPaths)) {
+        Object.entries(soundPaths).forEach(([name, path]) => {
             const fullPath = baseUrl + path;
             console.log(`Loading sound: ${name} from ${fullPath}`);
             
-            // Create new Audio element
             soundEffects[name] = new Audio();
-            
-            // Add error handler before setting source
-            soundEffects[name].onerror = (e) => {
-                console.error(`Error loading sound ${name} from ${fullPath}:`, e);
-            };
-            
-            // Set source and load
             soundEffects[name].src = fullPath;
-            soundEffects[name].volume = 0.4;
             
-            try {
-                soundEffects[name].load();
-            } catch (e) {
-                console.error(`Failed to load sound ${name}:`, e);
-            }
-        }
-        
-        // Apply specific volume adjustments
-        if (soundEffects.laser) soundEffects.laser.volume = 0.32;
-        if (soundEffects.enemyHit) soundEffects.enemyHit.volume = 0.32;
-        
+            // Add load event listener
+            soundEffects[name].addEventListener('canplaythrough', () => {
+                console.log(`Sound ${name} loaded successfully`);
+            });
+            
+            // Add error listener
+            soundEffects[name].addEventListener('error', (e) => {
+                console.error(`Error loading sound ${name} from ${fullPath}:`, e);
+            });
+        });
+
         soundsInitialized = true;
-        console.log('Sound effects initialized successfully');
+        sfxEnabled = true;
+        console.log('Sound initialization complete. Available sounds:', Object.keys(soundEffects));
     } catch (error) {
-        console.error('Error initializing sound effects:', error);
+        console.error('Error during sound initialization:', error);
+        soundsInitialized = false;
+        sfxEnabled = false;
     }
 }
 
