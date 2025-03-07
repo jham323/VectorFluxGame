@@ -1,6 +1,6 @@
 // Debug configuration - MUST BE AT START OF FILE
-window.DEBUG = true;
-window.DEBUG_SOUND = true;
+window.DEBUG = false;
+window.DEBUG_SOUND = false;
 window.debugLog = function(category, message, data = null) {
     if (!window.DEBUG) return;
     console.log(`[${category}]`, message, data || '');
@@ -40,7 +40,7 @@ console.log('Full URL:', window.location.href);
 const soundEffects = {};
 
 // Debugging flag for audio issues
-const debugAudio = true;
+const debugAudio = false;
 
 // Audio state
 let sfxEnabled = true; // Enable sound effects by default
