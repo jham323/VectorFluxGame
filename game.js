@@ -616,6 +616,13 @@ function drawTargetingSight() {
 function shoot() {
     console.log("Shooting!"); // Debug log
     
+    // Add debug logging for sound effects
+    console.log("Sound effects state:", {
+        initialized: soundsInitialized,
+        enabled: sfxEnabled,
+        laserSound: soundEffects.laser ? "loaded" : "not loaded"
+    });
+    
     // Play laser sound effect
     playSoundEffect('laser');
     
@@ -3149,16 +3156,19 @@ function initSoundEffects() {
 
 // Function to play a sound effect
 function playSoundEffect(name) {
+    console.log(`Attempting to play sound: ${name}`);
+    console.log(`Sound effect state:`, soundEffects[name]);
+    
     try {
         // Make sure sounds are initialized
         if (!soundsInitialized) {
-            if (debugAudio) console.log(`Initializing sounds before playing ${name}`);
+            console.log(`Initializing sounds before playing ${name}`);
             initSoundEffects();
         }
         
         // Check if sound effects are enabled
         if (!sfxEnabled) {
-            if (debugAudio) console.log(`Sound ${name} not played: sound effects disabled`);
+            console.log(`Sound ${name} not played: sound effects disabled`);
             return;
         }
         
@@ -3168,7 +3178,7 @@ function playSoundEffect(name) {
             return;
         }
         
-        if (debugAudio) console.log(`Playing sound: ${name}`);
+        console.log(`Playing sound: ${name}`);
         
         // Clone the audio to allow overlapping sounds
         const sound = soundEffects[name].cloneNode();
@@ -3177,14 +3187,14 @@ function playSoundEffect(name) {
         // Play with error handling
         sound.play()
             .then(() => {
-                if (debugAudio) console.log(`Sound ${name} started playing`);
+                console.log(`Sound ${name} started playing`);
             })
             .catch(error => {
                 console.error(`Failed to play ${name} sound:`, error);
                 
                 // Try alternative method for Safari
                 if (error.name === 'NotAllowedError') {
-                    if (debugAudio) console.log(`Attempting alternative play method for ${name}`);
+                    console.log(`Attempting alternative play method for ${name}`);
                     // Try direct play on original audio element for user interaction requirement
                     soundEffects[name].play().catch(e => 
                         console.error(`Alternative method failed for ${name}:`, e)
@@ -3194,7 +3204,7 @@ function playSoundEffect(name) {
         
         // Clean up clone after it finishes playing
         sound.onended = () => {
-            if (debugAudio) console.log(`Sound ${name} finished playing`);
+            console.log(`Sound ${name} finished playing`);
             sound.onended = null;
         };
     } catch (error) {
