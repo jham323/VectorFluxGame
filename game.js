@@ -145,16 +145,18 @@ function handleKeyUp(e) {
 
 // Restore the player entrance animation and fix enemy spawning
 function startGame() {
-    console.log("Game started!");
+    console.log('Game starting...');
+    console.log('Sound system state at game start:', {
+        soundsInitialized,
+        sfxEnabled,
+        soundEffects: Object.keys(soundEffects)
+    });
     
-    // Play button sound
-    playSoundEffect('button');
-    
-    // Reset game state
+    // Initialize game state
     gameStarted = true;
-    gameOver = false;
-    gamePaused = false; // Reset pause state when starting game
     score = 0;
+    gameOver = false;
+    gamePaused = false;
     
     // Add game-active class to body to show pause hint
     document.body.classList.add('game-active');
@@ -614,60 +616,72 @@ function drawTargetingSight() {
 
 // Function to handle shooting through the targeting sight
 function shoot() {
-    console.log("%c SHOOT FUNCTION CALLED ", "background: #ff0000; color: #ffffff; font-size: 16px;");
-    
-    // Add detailed debug logging for sound effects
-    console.log("%c SOUND SYSTEM STATE ", "background: #0000ff; color: #ffffff; font-size: 14px;", {
-        soundsInitialized,
-        sfxEnabled,
-        laserSoundExists: soundEffects.hasOwnProperty('laser'),
-        laserSoundState: soundEffects.laser ? {
-            src: soundEffects.laser.src,
-            readyState: soundEffects.laser.readyState,
-            paused: soundEffects.laser.paused
-        } : "not loaded"
-    });
-    
-    // Play laser sound effect with more logging
-    console.log("%c Attempting to play laser sound ", "background: #00ff00; color: #000000;");
-    playSoundEffect('laser');
-    
-    // Make sure player has a sight position
-    if (!player.sightX || !player.sightY) {
-        player.sightX = player.x;
-        player.sightY = player.y - 150;
+    try {
+        console.log('Shoot function called');
+        
+        // Check sound system state
+        if (!soundsInitialized) {
+            console.error('Sound system not initialized!');
+        }
+        
+        if (!sfxEnabled) {
+            console.warn('Sound effects are disabled');
+        }
+        
+        if (!soundEffects || !soundEffects.laser) {
+            console.error('Laser sound not loaded:', {
+                soundEffects: soundEffects ? 'exists' : 'undefined',
+                laser: soundEffects?.laser ? 'exists' : 'missing'
+            });
+        } else {
+            console.log('Laser sound state:', {
+                src: soundEffects.laser.src,
+                readyState: soundEffects.laser.readyState
+            });
+        }
+        
+        // Try to play the sound
+        playSoundEffect('laser');
+        
+        // Make sure player has a sight position
+        if (!player.sightX || !player.sightY) {
+            player.sightX = player.x;
+            player.sightY = player.y - 150;
+        }
+        
+        // Add projectile that will pass through the targeting sight
+        projectiles.push({
+            x: player.x,
+            y: player.y - player.height/3,
+            z: 0,
+            initialX: player.x, // Store initial position
+            initialY: player.y - player.height/3,
+            // Store the sight position as the target
+            targetX: player.sightX,
+            targetY: player.sightY,
+            // Calculate velocity based on the distance to the sight
+            speed: 1200,
+            width: 5,
+            height: 15,
+            isEnemy: false,
+            // ADDED: Flag to identify targeting sight projectiles
+            isTargeting: true
+        });
+        
+        // Add muzzle flash
+        particles.push({
+            x: player.x,
+            y: player.y - player.height/3,
+            z: 0,
+            size: 20,
+            color: '#00FFFF',
+            life: 0.1,
+            maxLife: 0.1,
+            type: 'flash'
+        });
+    } catch (error) {
+        console.error('Error in shoot function:', error);
     }
-    
-    // Add projectile that will pass through the targeting sight
-    projectiles.push({
-        x: player.x,
-        y: player.y - player.height/3,
-        z: 0,
-        initialX: player.x, // Store initial position
-        initialY: player.y - player.height/3,
-        // Store the sight position as the target
-        targetX: player.sightX,
-        targetY: player.sightY,
-        // Calculate velocity based on the distance to the sight
-        speed: 1200,
-        width: 5,
-        height: 15,
-        isEnemy: false,
-        // ADDED: Flag to identify targeting sight projectiles
-        isTargeting: true
-    });
-    
-    // Add muzzle flash
-    particles.push({
-        x: player.x,
-        y: player.y - player.height/3,
-        z: 0,
-        size: 20,
-        color: '#00FFFF',
-        life: 0.1,
-        maxLife: 0.1,
-        type: 'flash'
-    });
 }
 
 // Update projectiles to move through the targeting sight
@@ -3177,77 +3191,39 @@ function initSoundEffects() {
 
 // Function to play a sound effect
 function playSoundEffect(name) {
-    console.log("%c PLAY SOUND EFFECT CALLED ", "background: #ff00ff; color: #ffffff; font-size: 16px;", {
-        soundName: name,
-        exists: soundEffects.hasOwnProperty(name),
-        soundState: soundEffects[name] ? {
-            src: soundEffects[name].src,
-            readyState: soundEffects[name].readyState,
-            paused: soundEffects[name].paused
-        } : "not found"
-    });
-    
-    if (!sfxEnabled || !soundEffects[name]) {
-        console.log("%c Sound effect blocked ", "background: #ff0000; color: #ffffff;", {
-            reason: !sfxEnabled ? "sfx disabled" : "sound not found",
-            name: name
-        });
-        return;
-    }
-    
-    console.log(`Attempting to play sound: ${name}`);
-    console.log(`Sound effect state:`, soundEffects[name]);
-    
     try {
-        // Make sure sounds are initialized
-        if (!soundsInitialized) {
-            console.log(`Initializing sounds before playing ${name}`);
-            initSoundEffects();
-        }
+        console.log('playSoundEffect called with:', name);
         
-        // Check if sound effects are enabled
-        if (!sfxEnabled) {
-            console.log(`Sound ${name} not played: sound effects disabled`);
+        if (!soundEffects) {
+            console.error('soundEffects object is undefined');
             return;
         }
         
-        // Check if the sound exists
         if (!soundEffects[name]) {
-            console.error(`Sound effect '${name}' not found`);
+            console.error(`Sound effect "${name}" not found in soundEffects`);
             return;
         }
         
-        console.log(`Playing sound: ${name}`);
+        if (!sfxEnabled) {
+            console.warn('Sound effects are disabled, not playing:', name);
+            return;
+        }
         
-        // Clone the audio to allow overlapping sounds
         const sound = soundEffects[name].cloneNode();
-        sound.volume = soundEffects[name].volume;
+        console.log(`Attempting to play ${name} sound`);
         
-        // Play with error handling
         sound.play()
-            .then(() => {
-                console.log(`Sound ${name} started playing`);
-            })
+            .then(() => console.log(`${name} sound started playing`))
             .catch(error => {
-                console.error(`Failed to play ${name} sound:`, error);
-                
-                // Try alternative method for Safari
-                if (error.name === 'NotAllowedError') {
-                    console.log(`Attempting alternative play method for ${name}`);
-                    // Try direct play on original audio element for user interaction requirement
-                    soundEffects[name].play().catch(e => 
-                        console.error(`Alternative method failed for ${name}:`, e)
-                    );
-                }
+                console.error(`Error playing ${name} sound:`, error);
+                console.log('Sound state:', {
+                    readyState: sound.readyState,
+                    paused: sound.paused,
+                    src: sound.src
+                });
             });
-        
-        // Clean up clone after it finishes playing
-        sound.onended = () => {
-            console.log(`Sound ${name} finished playing`);
-            sound.onended = null;
-        };
     } catch (error) {
-        console.error(`Exception in playSoundEffect for ${name}:`, error);
+        console.error('Error in playSoundEffect:', error);
     }
 }
 
