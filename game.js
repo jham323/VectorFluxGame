@@ -3026,9 +3026,9 @@ function drawGameTitle() {
         
         // Draw the title image if loaded
         if (titleImage.complete) {
-            // Calculate position with 40% larger size
-            const scaleFactor = 1.4; // 40% larger
-            const imgWidth = Math.min(canvas.width * 0.8 * scaleFactor, titleImage.width * scaleFactor);
+            // Calculate position with larger size
+            const scaleFactor = 1.8; // Increased from 1.4 to 1.8 (80% larger)
+            const imgWidth = Math.min(canvas.width * 0.9 * scaleFactor, titleImage.width * scaleFactor);
             const imgHeight = (imgWidth / titleImage.width) * titleImage.height;
             
             // Fine-tune horizontal position with a -0.7% shift to the left
