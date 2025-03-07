@@ -625,9 +625,9 @@ function drawTargetingSight() {
 // Function to handle shooting through the targeting sight
 function shoot() {
     debugLog('SHOOT', 'Shoot function called');
-    debugLog('SHOOT', `Sound system state: initialized=${soundsInitialized}, enabled=${soundEffectsEnabled}`);
+    debugLog('SHOOT', `Sound system state: initialized=${soundsInitialized}, enabled=${sfxEnabled}`);
     
-    if (soundEffectsEnabled && soundEffects.laser) {
+    if (sfxEnabled && soundEffects.laser) {
         playSoundEffect('laser');
     } else {
         debugLog('SHOOT', 'Cannot play laser sound - sound system not ready');
@@ -3121,23 +3121,33 @@ function initSoundEffects() {
         button: baseUrl + 'audio/sfx/button.mp3'
     };
 
+    // Log all sound paths
+    console.log('Sound effect paths:', soundPaths);
+
     Object.entries(soundPaths).forEach(([name, path]) => {
         debugLog('SOUND', `Loading sound: ${name} from ${path}`);
         const audio = new Audio(path);
         
         audio.addEventListener('canplaythrough', () => {
             debugLog('SOUND', `Sound loaded successfully: ${name}`);
+            console.log(`Sound ${name} loaded successfully from ${path}`);
         });
         
         audio.addEventListener('error', (e) => {
             debugLog('SOUND', `Error loading sound: ${name}`, e);
             console.error(`Failed to load sound ${name} from ${path}:`, e);
+            console.error('Audio error details:', e.target.error);
         });
         
         soundEffects[name] = audio;
     });
 
     soundsInitialized = true;
+    console.log('Sound effects initialization complete. State:', {
+        soundsInitialized,
+        sfxEnabled,
+        availableSounds: Object.keys(soundEffects)
+    });
 }
 
 // Function to play a sound effect with error handling
