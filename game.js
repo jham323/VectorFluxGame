@@ -22,9 +22,9 @@ const audioIcon = document.getElementById('audioIcon');
 // Get base URL for assets (resolves GitHub Pages path issues)
 const baseUrl = window.location.hostname.includes('github.io') 
     ? '/VectorFluxGame/' 
-    : './';
+    : '';
 
-// Sound effects
+// Sound effects with proper path handling
 const soundEffects = {
     laser: null,
     torpedo: null,
@@ -33,7 +33,7 @@ const soundEffects = {
     playerHit: null,
     shieldDown: null,
     playerExplosion: null,
-    button: null // Add button sound
+    button: null
 };
 
 // Debugging flag for audio issues
@@ -3048,14 +3048,14 @@ let currentTrack = 'gameplay'; // Track which music is currently playing: 'gamep
 
 // Initialize audio
 function initAudio() {
-    // Set initial track to gameplay music
+    // Set initial track to gameplay music with proper path
     const musicPath = baseUrl + 'audio/Dreams.mp3';
+    console.log('Setting music path:', musicPath);
     gameMusic.src = musicPath;
-    console.log("Setting initial music path:", musicPath);
     
     // Add error handler for audio loading
     gameMusic.onerror = (e) => {
-        console.error("Error loading music from", musicPath, ":", e);
+        console.error('Error loading music from', musicPath, ':', e);
     };
     
     // Set initial volume
@@ -3064,61 +3064,43 @@ function initAudio() {
     // Add event listener for the toggle button
     toggleAudioButton.addEventListener('click', toggleAudio);
     
+    // Initialize sound effects
+    initSoundEffects();
+    
     // Try to play music immediately (may be blocked by browser)
     if (musicEnabled) {
-        // Try to play immediately
         gameMusic.play()
             .then(() => {
-                console.log("Music started successfully on page load");
+                console.log('Music started successfully on page load');
             })
             .catch(e => {
-                console.log("Autoplay prevented by browser:", e);
+                console.log('Autoplay prevented by browser:', e);
                 
                 // Add a one-time click listener to the document to start audio
                 const startAudioOnInteraction = () => {
                     if (musicEnabled) {
                         gameMusic.play()
-                            .then(() => console.log("Music started after user interaction"))
-                            .catch(e => console.log("Audio still failed:", e));
+                            .then(() => console.log('Music started after user interaction'))
+                            .catch(e => console.log('Audio still failed:', e));
                     }
-                    // Remove the listener after first interaction
                     document.removeEventListener('click', startAudioOnInteraction);
                 };
                 
                 document.addEventListener('click', startAudioOnInteraction);
             });
     }
-    
-    // Keep the existing event listeners for when the game starts
-    document.getElementById('startButton').addEventListener('click', function() {
-        if (musicEnabled && gameMusic.paused) {
-            gameMusic.play().catch(e => console.log("Audio play failed:", e));
-        }
-    });
-    
-    // Also ensure music is playing when spacebar is pressed to start game
-    window.addEventListener('keydown', function(e) {
-        if (musicEnabled && gameMusic.paused) {
-            gameMusic.play().catch(e => console.log("Audio play failed:", e));
-        }
-    });
-    
-    // Initialize sound effects
-    initSoundEffects();
 }
 
-// Initialize sound effects
+// Initialize sound effects with proper path handling
 function initSoundEffects() {
     if (soundsInitialized) {
-        if (debugAudio) console.log('Sound effects already initialized');
+        console.log('Sound effects already initialized');
         return;
     }
     
-    if (debugAudio) console.log('Initializing sound effects with baseUrl:', baseUrl);
+    console.log('Initializing sound effects with baseUrl:', baseUrl);
     
-    // Create audio objects for each sound effect with proper error handling
     try {
-        // Map of sound effect names to file paths
         const soundPaths = {
             laser: 'audio/sfx/laser.mp3',
             torpedo: 'audio/sfx/torpedo.mp3',
@@ -3133,41 +3115,33 @@ function initSoundEffects() {
         // Initialize each sound effect
         for (const [name, path] of Object.entries(soundPaths)) {
             const fullPath = baseUrl + path;
-            
-            if (debugAudio) console.log(`Loading sound: ${name} from ${fullPath}`);
+            console.log(`Loading sound: ${name} from ${fullPath}`);
             
             // Create new Audio element
             soundEffects[name] = new Audio();
             
-            // Add error handling before setting source
+            // Add error handler before setting source
             soundEffects[name].onerror = (e) => {
                 console.error(`Error loading sound ${name} from ${fullPath}:`, e);
             };
             
-            // Set source after adding error handler
+            // Set source and load
             soundEffects[name].src = fullPath;
-            
-            // Set default volume
             soundEffects[name].volume = 0.4;
             
-            // Preload audio
-            const loadPromise = soundEffects[name].load();
-            if (loadPromise !== undefined) {
-                loadPromise.catch(e => console.error(`Failed to preload ${name}:`, e));
+            try {
+                soundEffects[name].load();
+            } catch (e) {
+                console.error(`Failed to load sound ${name}:`, e);
             }
         }
         
         // Apply specific volume adjustments
-        if (soundEffects.laser) {
-            soundEffects.laser.volume = 0.32; // 0.4 * 0.8 = 0.32 (20% reduction)
-        }
-        
-        if (soundEffects.enemyHit) {
-            soundEffects.enemyHit.volume = 0.32; // Also reduce by 20%
-        }
+        if (soundEffects.laser) soundEffects.laser.volume = 0.32;
+        if (soundEffects.enemyHit) soundEffects.enemyHit.volume = 0.32;
         
         soundsInitialized = true;
-        if (debugAudio) console.log('Sound effects initialized successfully');
+        console.log('Sound effects initialized successfully');
     } catch (error) {
         console.error('Error initializing sound effects:', error);
     }
@@ -4243,19 +4217,19 @@ function handleGameOver(finalScore) {
     }
 }
 
-// Switch to game over music
+// Switch to game over music with proper path handling
 function playGameOverMusic() {
     if (currentTrack !== 'gameover') {
         gameMusic.pause();
         const musicPath = baseUrl + 'audio/Cosmos.mp3';
+        console.log('Switching to game over music:', musicPath);
         gameMusic.src = musicPath;
         currentTrack = 'gameover';
-        console.log("Switched to game over music:", musicPath);
         
         if (musicEnabled) {
             gameMusic.play()
-                .then(() => console.log("Game over music started"))
-                .catch(e => console.error("Failed to start game over music:", e));
+                .then(() => console.log('Game over music started'))
+                .catch(e => console.error('Failed to start game over music:', e));
         }
     }
 }

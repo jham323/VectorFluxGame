@@ -1557,8 +1557,24 @@
     <!-- Add this script before the closing </body> tag, after your other scripts -->
     <script>
         // Single consolidated initialization script
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             console.log("DOM Content Loaded - Initializing game systems");
+            
+            // Test database connection before proceeding with initialization
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('scores')
+                    .select('count')
+                    .limit(1);
+                    
+                if (error) {
+                    console.error("Database connection test failed:", error);
+                } else {
+                    console.log("Database connection test successful");
+                }
+            } catch (error) {
+                console.error("Failed to test database connection:", error);
+            }
             
             // Game elements
             const tutorialOverlay = document.getElementById('tutorialOverlay');
@@ -1688,11 +1704,10 @@
                     playSoundEffect('button');
                     
                     // Hide the leaderboard directly
+                    const leaderboardOverlay = document.getElementById('leaderboardOverlay');
                     leaderboardOverlay.classList.remove('active');
                     leaderboardOverlay.style.opacity = '0';
                     leaderboardOverlay.style.pointerEvents = 'none';
-                    
-                    return false;
                 };
             }
             
@@ -1709,6 +1724,7 @@
                     playSoundEffect('button');
                     
                     // Hide the leaderboard directly
+                    const leaderboardOverlay = document.getElementById('leaderboardOverlay');
                     leaderboardOverlay.classList.remove('active');
                     leaderboardOverlay.style.opacity = '0';
                     leaderboardOverlay.style.pointerEvents = 'none';
@@ -1717,8 +1733,6 @@
                     setTimeout(function() {
                         location.reload();
                     }, 100);
-                    
-                    return false;
                 };
             }
             
@@ -1733,17 +1747,6 @@
                     showLeaderboard(); // Refresh the leaderboard
                 };
             }
-            
-            // Test database connection on startup
-            testDatabaseConnection().then(result => {
-                console.log("Database connection test result:", result);
-            });
-            
-            // Expose functions to be called from game.js
-            window.gameLeaderboard = {
-                showNameInput,
-                showLeaderboard
-            };
             
             console.log("Game initialization complete");
         });
