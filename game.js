@@ -29,10 +29,12 @@ const audioIcon = document.getElementById('audioIcon');
 
 // Get base URL for assets (resolves GitHub Pages path issues)
 const baseUrl = window.location.hostname.includes('github.io') 
-    ? '/VectorFluxGame/' 
+    ? 'https://jham323.github.io/VectorFluxGame/' 
     : '/';
 
 console.log('Base URL for assets:', baseUrl);
+console.log('Current hostname:', window.location.hostname);
+console.log('Full URL:', window.location.href);
 
 // Sound effects with proper path handling
 const soundEffects = {};
@@ -3107,51 +3109,81 @@ function initSoundEffects() {
     console.log('Hostname:', window.location.hostname);
     console.log('Base URL:', baseUrl);
 
-    const soundPaths = {
-        laser: baseUrl + 'audio/sfx/laser.mp3',
-        torpedo: baseUrl + 'audio/sfx/torpedo.mp3',
-        enemyHit: baseUrl + 'audio/sfx/enemy_hit.mp3',
-        enemyExplosion: baseUrl + 'audio/sfx/enemy_explosion.mp3',
-        playerHit: baseUrl + 'audio/sfx/player_hit.mp3',
-        shieldDown: baseUrl + 'audio/sfx/shield_down.mp3',
-        playerExplosion: baseUrl + 'audio/sfx/player_explosion.mp3',
-        button: baseUrl + 'audio/sfx/button.mp3'
-    };
+    // Try multiple path options for sound files
+    const pathOptions = [
+        // GitHub Pages absolute URL
+        'https://jham323.github.io/VectorFluxGame/audio/sfx/',
+        // GitHub Pages relative URL
+        '/VectorFluxGame/audio/sfx/',
+        // Local development
+        '/audio/sfx/',
+        // Relative path
+        'audio/sfx/',
+        // Current path + relative
+        window.location.pathname + 'audio/sfx/'
+    ];
 
-    console.log('Sound effect paths:', soundPaths);
+    console.log('Trying multiple path options:', pathOptions);
 
-    // First, verify files exist
-    Object.entries(soundPaths).forEach(([name, path]) => {
-        fetch(path)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+    const soundFiles = [
+        'laser.mp3',
+        'torpedo.mp3',
+        'enemy_hit.mp3',
+        'enemy_explosion.mp3',
+        'player_hit.mp3',
+        'shield_down.mp3',
+        'player_explosion.mp3',
+        'button.mp3'
+    ];
+
+    // Try each path option
+    pathOptions.forEach(basePath => {
+        console.log(`Testing path: ${basePath}`);
+        
+        // Check the first sound file as a test
+        checkAudioFile(basePath + 'laser.mp3')
+            .then(exists => {
+                if (exists) {
+                    console.log(`✅ Found working path: ${basePath}`);
+                    // Load all sound files from this path
+                    loadSoundFiles(basePath, soundFiles);
                 }
-                console.log(`✅ Sound file verified: ${name} at ${path}`);
-                // After verifying file exists, create Audio object
-                const audio = new Audio(path);
-                
-                audio.addEventListener('canplaythrough', () => {
-                    console.log(`✅ Sound loaded successfully: ${name}`);
-                });
-                
-                audio.addEventListener('error', (e) => {
-                    console.error(`❌ Error loading sound: ${name}`, e);
-                });
-                
-                soundEffects[name] = audio;
-            })
-            .catch(error => {
-                console.error(`❌ Failed to verify sound file: ${name} at ${path}`, error);
             });
     });
 
     soundsInitialized = true;
-    console.log('Sound effects initialization complete. State:', {
-        soundsInitialized,
-        sfxEnabled,
-        availableSounds: Object.keys(soundEffects)
+}
+
+// Load sound files from a specific path
+function loadSoundFiles(basePath, soundFiles) {
+    console.log(`Loading all sound files from: ${basePath}`);
+    
+    soundFiles.forEach(file => {
+        const name = file.split('.')[0]; // Remove extension
+        const path = basePath + file;
+        
+        console.log(`Loading sound: ${name} from ${path}`);
+        const audio = new Audio(path);
+        
+        audio.addEventListener('canplaythrough', () => {
+            console.log(`✅ Sound loaded successfully: ${name}`);
+        });
+        
+        audio.addEventListener('error', (e) => {
+            console.error(`❌ Error loading sound: ${name}`, e);
+        });
+        
+        soundEffects[name] = audio;
     });
+    
+    // Test play a sound to verify
+    setTimeout(() => {
+        console.log('Testing sound playback...');
+        if (soundEffects.button) {
+            console.log('Attempting to play button sound...');
+            playSoundEffect('button');
+        }
+    }, 2000);
 }
 
 // Function to play a sound effect with error handling
@@ -3175,6 +3207,8 @@ function playSoundEffect(name) {
     
     if (!soundEffects[name]) {
         console.error(`Sound not found: ${name}`);
+        // Try to initialize on demand
+        initSoundEffects();
         return;
     }
 
@@ -4238,3 +4272,37 @@ function playGameOverMusic() {
         }
     }
 }
+
+// Function to check if an audio file exists
+function checkAudioFile(url) {
+    return new Promise((resolve, reject) => {
+        fetch(url, { method: 'HEAD' })
+            .then(response => {
+                if (response.ok) {
+                    console.log(`✅ File exists: ${url}`);
+                    resolve(true);
+                } else {
+                    console.error(`❌ File not found: ${url} (Status: ${response.status})`);
+                    resolve(false);
+                }
+            })
+            .catch(error => {
+                console.error(`❌ Error checking file: ${url}`, error);
+                resolve(false);
+            });
+    });
+}
+
+// Make sure initSoundEffects is called after DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM Content Loaded - Initializing sound effects');
+    initSoundEffects();
+});
+
+// Also try initializing on window load
+window.addEventListener('load', () => {
+    console.log('Window Loaded - Ensuring sound effects are initialized');
+    if (!soundsInitialized) {
+        initSoundEffects();
+    }
+});
