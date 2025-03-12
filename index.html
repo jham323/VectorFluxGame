@@ -18,7 +18,6 @@
             justify-content: center;
             height: 100vh;
             overflow: hidden;
-            background-image: url('background.jpg');
             background-size: cover;
             background-position: center;
             filter: none;
@@ -1067,6 +1066,12 @@
                 // Create the global supabaseClient variable
                 window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
                 
+                // Make sure supabaseClient exists before proceeding
+                if (!window.supabaseClient) {
+                    console.error("Failed to create Supabase client");
+                    return;
+                }
+                
                 console.log("Supabase client initialized:", window.supabaseClient);
                 
                 // Test the connection
@@ -1075,6 +1080,38 @@
                 console.error("Error initializing Supabase client:", e);
             }
         });
+        
+        // Add this function to test the database connection
+        async function testDatabaseConnection() {
+            // Add a small delay before testing to ensure client is fully initialized
+            setTimeout(async () => {
+                try {
+                    console.log("Testing database connection...");
+                    
+                    if (!window.supabaseClient || !window.supabaseClient.from) {
+                        console.error("Supabase client not properly initialized");
+                        return false;
+                    }
+                    
+                    // Try to fetch a single row
+                    const { data, error } = await window.supabaseClient
+                        .from('scores')
+                        .select('*')
+                        .limit(1);
+                        
+                    if (error) {
+                        console.error("Database connection error:", error);
+                        return false;
+                    }
+                    
+                    console.log("Database connection successful, sample data:", data);
+                    return true;
+                } catch (e) {
+                    console.error("Exception testing database connection:", e);
+                    return false;
+                }
+            }, 500);
+        }
         
         // Add these near the beginning of your script
         console.log("Leaderboard script loaded");
@@ -1527,6 +1564,12 @@
             try {
                 console.log("Testing SELECT permission...");
                 
+                // Check if supabaseClient is properly initialized
+                if (!window.supabaseClient || !window.supabaseClient.from) {
+                    console.error("SELECT permission test failed: Supabase client not ready");
+                    return false;
+                }
+                
                 const { data, error } = await window.supabaseClient
                     .from('scores')
                     .select('*')
@@ -1545,10 +1588,12 @@
             }
         }
         
-        // Call this function to test
-        testSelectPermission().then(result => {
-            console.log("SELECT permission test result:", result ? "Success" : "Failed");
-        });
+        // Delay the permission test to ensure client is ready
+        setTimeout(() => {
+            testSelectPermission().then(result => {
+                console.log("SELECT permission test result:", result ? "Success" : "Failed");
+            });
+        }, 1000);
     </script>
     
     <!-- Add game.js after the Supabase initialization -->
